@@ -7,6 +7,7 @@ import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart
 } from 'recharts';
+import { TrendingUp, Clock, Coins, BarChart3, CalendarDays, ShieldAlert, ClipboardList, Users, CheckSquare, AlertTriangle } from 'lucide-react';
 
 // Demo data for when API is not available
 const demoKPIs = {
@@ -81,7 +82,7 @@ export default function DashboardPage() {
         <div className={`kpi-card ${getProgressColor(kpis.overall_progress_planned, kpis.overall_progress_actual) === 'green' ? 'success' : getProgressColor(kpis.overall_progress_planned, kpis.overall_progress_actual) === 'orange' ? 'warning' : 'danger'}`}>
           <div className="kpi-header">
             <span className="kpi-label">{t('dashboard.progress', lang)}</span>
-            <div className={`kpi-icon ${kpis.overall_progress_actual >= kpis.overall_progress_planned * 0.95 ? 'success' : 'warning'}`}>📈</div>
+            <div className={`kpi-icon ${kpis.overall_progress_actual >= kpis.overall_progress_planned * 0.95 ? 'success' : 'warning'}`}><TrendingUp size={18} /></div>
           </div>
           <div className="kpi-value">{kpis.overall_progress_actual}%</div>
           <div className="kpi-sub">{t('common.planned', lang)}: {kpis.overall_progress_planned}%</div>
@@ -95,7 +96,7 @@ export default function DashboardPage() {
         <div className={`kpi-card ${kpis.spi >= 1 ? 'success' : kpis.spi >= 0.9 ? 'warning' : 'danger'}`}>
           <div className="kpi-header">
             <span className="kpi-label">SPI</span>
-            <div className={`kpi-icon ${kpis.spi >= 1 ? 'success' : 'warning'}`}>⏱️</div>
+            <div className={`kpi-icon ${kpis.spi >= 1 ? 'success' : 'warning'}`}><Clock size={18} /></div>
           </div>
           <div className="kpi-value" style={{ color: getSPIColor(kpis.spi) }}>{kpis.spi}</div>
           <div className="kpi-sub">{t('dashboard.spi', lang)}</div>
@@ -104,7 +105,7 @@ export default function DashboardPage() {
         <div className={`kpi-card ${kpis.cpi >= 1 ? 'success' : kpis.cpi >= 0.9 ? 'warning' : 'danger'}`}>
           <div className="kpi-header">
             <span className="kpi-label">CPI</span>
-            <div className={`kpi-icon ${kpis.cpi >= 1 ? 'success' : 'warning'}`}>💰</div>
+            <div className={`kpi-icon ${kpis.cpi >= 1 ? 'success' : 'warning'}`}><Coins size={18} /></div>
           </div>
           <div className="kpi-value" style={{ color: getCPIColor(kpis.cpi) }}>{kpis.cpi}</div>
           <div className="kpi-sub">{t('dashboard.cpi', lang)}</div>
@@ -113,7 +114,7 @@ export default function DashboardPage() {
         <div className="kpi-card info">
           <div className="kpi-header">
             <span className="kpi-label">{t('dashboard.budget', lang)}</span>
-            <div className="kpi-icon info">📊</div>
+            <div className="kpi-icon info"><BarChart3 size={18} /></div>
           </div>
           <div className="kpi-value">{kpis.budget_consumed_pct}%</div>
           <div className="kpi-sub">{formatNumber(kpis.total_actual_cost)} / {formatNumber(kpis.total_budget)} TND</div>
@@ -127,7 +128,7 @@ export default function DashboardPage() {
         <div className="kpi-card purple">
           <div className="kpi-header">
             <span className="kpi-label">{t('dashboard.days', lang)}</span>
-            <div className="kpi-icon info">📅</div>
+            <div className="kpi-icon info"><CalendarDays size={18} /></div>
           </div>
           <div className="kpi-value">{kpis.days_remaining}</div>
           <div className="kpi-sub">{lang === 'fr' ? 'jours' : 'days'}</div>
@@ -136,7 +137,7 @@ export default function DashboardPage() {
         <div className={`kpi-card ${kpis.active_critical_risks > 0 ? 'danger' : 'success'}`}>
           <div className="kpi-header">
             <span className="kpi-label">{t('dashboard.risks', lang)}</span>
-            <div className="kpi-icon danger">🚨</div>
+            <div className="kpi-icon danger"><ShieldAlert size={18} /></div>
           </div>
           <div className="kpi-value" style={{ color: kpis.active_critical_risks > 0 ? '#ef4444' : '#10b981' }}>
             {kpis.active_critical_risks}
@@ -147,7 +148,7 @@ export default function DashboardPage() {
         <div className={`kpi-card ${kpis.open_ncrs > 5 ? 'warning' : 'success'}`}>
           <div className="kpi-header">
             <span className="kpi-label">{t('dashboard.ncrs', lang)}</span>
-            <div className="kpi-icon warning">📋</div>
+            <div className="kpi-icon warning"><ClipboardList size={18} /></div>
           </div>
           <div className="kpi-value">{kpis.open_ncrs}</div>
           <div className="kpi-sub">{lang === 'fr' ? 'ouvertes' : 'open'}</div>
@@ -156,7 +157,7 @@ export default function DashboardPage() {
         <div className="kpi-card info">
           <div className="kpi-header">
             <span className="kpi-label">{t('dashboard.personnel', lang)}</span>
-            <div className="kpi-icon info">👷</div>
+            <div className="kpi-icon info"><Users size={18} /></div>
           </div>
           <div className="kpi-value">{kpis.total_personnel_today}</div>
           <div className="kpi-sub">{lang === 'fr' ? 'personnes sur site' : 'on-site'}</div>
@@ -167,7 +168,7 @@ export default function DashboardPage() {
       <div className="chart-grid">
         {/* S-Curve */}
         <div className="chart-card full-width">
-          <div className="chart-title">📈 {t('dashboard.scurve', lang)}</div>
+          <div className="chart-title"><TrendingUp size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('dashboard.scurve', lang)}</div>
           <ResponsiveContainer width="100%" height={320}>
             <AreaChart data={demoSCurve}>
               <defs>
@@ -195,7 +196,7 @@ export default function DashboardPage() {
 
         {/* Budget Breakdown */}
         <div className="chart-card">
-          <div className="chart-title">💰 {t('dashboard.budgetBreakdown', lang)}</div>
+          <div className="chart-title"><Coins size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('dashboard.budgetBreakdown', lang)}</div>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={demoBudget} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
@@ -212,7 +213,7 @@ export default function DashboardPage() {
 
         {/* Quality Pie */}
         <div className="chart-card">
-          <div className="chart-title">✅ {t('dashboard.qualityOverview', lang)}</div>
+          <div className="chart-title"><CheckSquare size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('dashboard.qualityOverview', lang)}</div>
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
               <Pie
@@ -236,7 +237,7 @@ export default function DashboardPage() {
 
         {/* Risk Heatmap */}
         <div className="chart-card">
-          <div className="chart-title">⚠️ {t('dashboard.riskMatrix', lang)}</div>
+          <div className="chart-title"><AlertTriangle size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('dashboard.riskMatrix', lang)}</div>
           <div style={{ padding: '12px 0' }}>
             <div style={{ display: 'flex', gap: 4, marginBottom: 4, fontSize: 10, color: '#5c6478' }}>
               <div style={{ width: 60 }}></div>

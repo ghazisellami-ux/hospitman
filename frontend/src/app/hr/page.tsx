@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Users } from 'lucide-react';
 
 interface PersonnelItem {
   id: number;
@@ -152,7 +153,7 @@ export default function HRPage() {
 
       {/* Attendance Chart */}
       <div className="chart-card" style={{ marginBottom: 24 }}>
-        <div className="chart-title">👷 {t('hr.attendance', lang)} — {lang === 'fr' ? 'Cette semaine' : 'This week'}</div>
+        <div className="chart-title"><Users size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('hr.attendance', lang)} — {lang === 'fr' ? 'Cette semaine' : 'This week'}</div>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={demoAttendance}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />

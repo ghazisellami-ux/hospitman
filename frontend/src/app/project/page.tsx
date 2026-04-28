@@ -3,6 +3,7 @@
 import React from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
+import { Building2, Bell } from 'lucide-react';
 
 export default function ProjectPage() {
   const { lang } = useLanguage();
@@ -10,7 +11,7 @@ export default function ProjectPage() {
   return (
     <div className="animate-in">
       <div className="page-header">
-        <h1 className="page-title">🏗️ {lang === 'fr' ? 'Paramètres du Projet' : 'Project Settings'}</h1>
+        <h1 className="page-title"><Building2 size={24} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8 }} />{lang === 'fr' ? 'Paramètres du Projet' : 'Project Settings'}</h1>
       </div>
 
       <div style={{ maxWidth: 800 }}>
@@ -77,7 +78,7 @@ export default function ProjectPage() {
 
         {/* Telegram Config */}
         <div className="chart-card">
-          <div className="chart-title">📱 Telegram {lang === 'fr' ? 'Notifications' : 'Notifications'}</div>
+          <div className="chart-title"><Bell size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />Telegram {lang === 'fr' ? 'Notifications' : 'Notifications'}</div>
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">Bot Token</label>

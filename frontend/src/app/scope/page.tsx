@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
+import { Target, FileEdit } from 'lucide-react';
 
 const demoLots = [
   { id: 1, name: 'Gros Œuvre', description: 'Structure béton armé, fondations', contractor: 'BTP STAR', status: 'in_progress' },
@@ -45,7 +46,7 @@ export default function ScopePage() {
 
       {/* Lots Table */}
       <div className="toolbar">
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>🎯 {t('scope.lots', lang)}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700 }}><Target size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('scope.lots', lang)}</h2>
         <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ {t('scope.addLot', lang)}</button>
       </div>
       <div className="data-table-wrapper">
@@ -75,7 +76,7 @@ export default function ScopePage() {
 
       {/* Change Requests */}
       <div className="toolbar" style={{ marginTop: 32 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>📝 {t('scope.changeRequests', lang)}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700 }}><FileEdit size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('scope.changeRequests', lang)}</h2>
         <button className="btn btn-secondary btn-sm">+ {lang === 'fr' ? 'Nouvelle demande' : 'New request'}</button>
       </div>
       <div className="data-table-wrapper">

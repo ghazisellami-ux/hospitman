@@ -3,6 +3,7 @@
 import React from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
+import { ClipboardList } from 'lucide-react';
 
 const demoRisks = [
   { id: 1, desc: 'Retard approvisionnement acier à cause de la crise logistique', category: 'schedule', probability: 'high', impact: 'major', score: 12, status: 'mitigating', responsible: 'BTP STAR' },
@@ -43,7 +44,7 @@ export default function RiskPage() {
 
       {/* Risk Register */}
       <div className="toolbar">
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>📋 {t('risk.register', lang)}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700 }}><ClipboardList size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('risk.register', lang)}</h2>
         <button className="btn btn-primary btn-sm">+ {t('risk.add', lang)}</button>
       </div>
       <div className="data-table-wrapper">

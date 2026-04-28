@@ -3,6 +3,7 @@
 import React from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
+import { Coins, Receipt } from 'lucide-react';
 
 const demoBudgets = [
   { lot: 'Gros Œuvre', initial: 25000000, committed: 22000000, actual: 18000000, eac: 26500000 },
@@ -61,7 +62,7 @@ export default function CostPage() {
 
       {/* Budget Table */}
       <div className="toolbar">
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>💰 {t('cost.budgets', lang)}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700 }}><Coins size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('cost.budgets', lang)}</h2>
       </div>
       <div className="data-table-wrapper">
         <table className="data-table">
@@ -94,7 +95,7 @@ export default function CostPage() {
 
       {/* Invoices */}
       <div className="toolbar" style={{ marginTop: 32 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>🧾 {t('cost.invoices', lang)}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700 }}><Receipt size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('cost.invoices', lang)}</h2>
         <button className="btn btn-primary btn-sm">+ {t('cost.addInvoice', lang)}</button>
       </div>
       <div className="data-table-wrapper">

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Language, t } from '@/lib/i18n';
+import { LayoutDashboard, Building2, Target, CalendarClock, Coins, Users, CheckSquare, MessageSquare, AlertTriangle, FileText } from 'lucide-react';
 import './globals.css';
 
 // Language context
@@ -17,17 +18,17 @@ export function useLanguage() {
 }
 
 // Sidebar navigation items
-const navItems = [
-  { key: 'dashboard', href: '/', icon: '📊' },
-  { key: 'project', href: '/project', icon: '🏗️' },
-  { key: 'scope', href: '/scope', icon: '🎯' },
-  { key: 'schedule', href: '/schedule', icon: '⏱️' },
-  { key: 'cost', href: '/cost', icon: '💰' },
-  { key: 'hr', href: '/hr', icon: '👷' },
-  { key: 'quality', href: '/quality', icon: '✅' },
-  { key: 'communication', href: '/communication', icon: '📨' },
-  { key: 'risk', href: '/risk', icon: '⚠️' },
-  { key: 'reports', href: '/reports', icon: '📄' },
+const navItems: { key: string; href: string; icon: ReactNode }[] = [
+  { key: 'dashboard', href: '/', icon: <LayoutDashboard size={18} /> },
+  { key: 'project', href: '/project', icon: <Building2 size={18} /> },
+  { key: 'scope', href: '/scope', icon: <Target size={18} /> },
+  { key: 'schedule', href: '/schedule', icon: <CalendarClock size={18} /> },
+  { key: 'cost', href: '/cost', icon: <Coins size={18} /> },
+  { key: 'hr', href: '/hr', icon: <Users size={18} /> },
+  { key: 'quality', href: '/quality', icon: <CheckSquare size={18} /> },
+  { key: 'communication', href: '/communication', icon: <MessageSquare size={18} /> },
+  { key: 'risk', href: '/risk', icon: <AlertTriangle size={18} /> },
+  { key: 'reports', href: '/reports', icon: <FileText size={18} /> },
 ];
 
 function Sidebar({ lang }: { lang: Language }) {

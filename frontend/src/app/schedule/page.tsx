@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart3, ClipboardList, Upload } from 'lucide-react';
 
 const demoActivities = [
   { id: 1, name: 'Terrassement', lot: 'VRD', planned_start: '2026-01-15', planned_end: '2026-03-15', actual_start: '2026-01-20', actual_progress: 100, planned_progress: 100, status: 'completed' },
@@ -37,7 +38,7 @@ export default function SchedulePage() {
 
       {/* Gantt-style bar chart */}
       <div className="chart-card" style={{ marginBottom: 24 }}>
-        <div className="chart-title">📊 {t('schedule.gantt', lang)} — {t('schedule.progress', lang)}</div>
+        <div className="chart-title"><BarChart3 size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('schedule.gantt', lang)} — {t('schedule.progress', lang)}</div>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={ganttData} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
@@ -52,9 +53,9 @@ export default function SchedulePage() {
 
       {/* Activities Table */}
       <div className="toolbar">
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>📋 {t('schedule.activities', lang)}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700 }}><ClipboardList size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('schedule.activities', lang)}</h2>
         <div className="toolbar-right">
-          <button className="btn btn-secondary btn-sm">{lang === 'fr' ? '📥 Importer CSV' : '📥 Import CSV'}</button>
+          <button className="btn btn-secondary btn-sm"><Upload size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />{lang === 'fr' ? 'Importer CSV' : 'Import CSV'}</button>
           <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ {t('schedule.addActivity', lang)}</button>
         </div>
       </div>

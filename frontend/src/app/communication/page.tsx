@@ -3,6 +3,7 @@
 import React from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
+import { MessageSquare, HelpCircle, Mail, FileText, CheckCircle } from 'lucide-react';
 
 const demoComms = [
   { id: 1, type: 'meeting', date: '2026-04-28', subject: 'Réunion hebdomadaire de chantier #18', participants: 'Direction, BTP STAR, Supervision' },
@@ -22,8 +23,8 @@ export default function CommunicationPage() {
   const { lang } = useLanguage();
   const typeLabel = (tp: string) => {
     const map: Record<string, Record<string, string>> = {
-      fr: { meeting: '📋 Réunion', rfi: '❓ RFI', correspondence: '✉️ Correspondance', minutes: '📝 PV' },
-      en: { meeting: '📋 Meeting', rfi: '❓ RFI', correspondence: '✉️ Correspondence', minutes: '📝 Minutes' },
+      fr: { meeting: 'Réunion', rfi: 'RFI', correspondence: 'Correspondance', minutes: 'PV' },
+      en: { meeting: 'Meeting', rfi: 'RFI', correspondence: 'Correspondence', minutes: 'Minutes' },
     };
     return map[lang]?.[tp] || tp;
   };
@@ -35,7 +36,7 @@ export default function CommunicationPage() {
       </div>
 
       <div className="toolbar">
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>📨 {t('comm.meetings', lang)}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700 }}><MessageSquare size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('comm.meetings', lang)}</h2>
         <button className="btn btn-primary btn-sm">+ {t('comm.add', lang)}</button>
       </div>
       <div className="data-table-wrapper">
@@ -55,7 +56,7 @@ export default function CommunicationPage() {
       </div>
 
       <div className="toolbar" style={{ marginTop: 32 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>✅ {t('comm.actions', lang)}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700 }}><CheckCircle size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('comm.actions', lang)}</h2>
       </div>
       <div className="data-table-wrapper">
         <table className="data-table">

@@ -3,6 +3,7 @@
 import React from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
+import { Search, ShieldAlert } from 'lucide-react';
 
 const demoInspections = [
   { id: 1, type: 'Béton', lot: 'Gros Œuvre', date: '2026-04-25', inspector: 'Ing. Trabelsi', result: 'conforming' },
@@ -40,7 +41,7 @@ export default function QualityPage() {
 
       {/* Inspections */}
       <div className="toolbar">
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>🔍 {t('quality.inspections', lang)}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700 }}><Search size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('quality.inspections', lang)}</h2>
         <button className="btn btn-primary btn-sm">+ {t('quality.addInspection', lang)}</button>
       </div>
       <div className="data-table-wrapper">
@@ -62,7 +63,7 @@ export default function QualityPage() {
 
       {/* NCRs */}
       <div className="toolbar" style={{ marginTop: 32 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>🚨 {t('quality.ncrs', lang)}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700 }}><ShieldAlert size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('quality.ncrs', lang)}</h2>
         <button className="btn btn-danger btn-sm">+ {t('quality.addNCR', lang)}</button>
       </div>
       <div className="data-table-wrapper">
