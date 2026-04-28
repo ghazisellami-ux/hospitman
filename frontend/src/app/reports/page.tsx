@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
 import { kpiData, budgetData, activityData, riskData, ncrData, qualityData, personnelSummary, fmt } from '@/lib/reportData';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 type ReportType = 'weekly' | 'monthly' | 'custom';
 
@@ -25,9 +28,6 @@ export default function ReportsPage() {
   async function generatePDF(type: ReportType) {
     setGenerating(`${type}-pdf`);
     try {
-      const { default: jsPDF } = await import('jspdf');
-      const autoTable = (await import('jspdf-autotable')).default;
-
       const doc = new jsPDF('p', 'mm', 'a4');
       const pageW = doc.internal.pageSize.getWidth();
       let y = 15;
@@ -205,7 +205,7 @@ export default function ReportsPage() {
       }
 
       // Footer on each page
-      const totalPages = doc.getNumberOfPages();
+      const totalPages = (doc as any).getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
@@ -234,8 +234,6 @@ export default function ReportsPage() {
   async function generateExcel(type: ReportType) {
     setGenerating(`${type}-excel`);
     try {
-      const XLSX = await import('xlsx');
-
       const wb = XLSX.utils.book_new();
 
       // KPIs sheet
