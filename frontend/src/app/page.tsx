@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from './layout';
 import { t } from '@/lib/i18n';
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart
 } from 'recharts';
 import { TrendingUp, Clock, Coins, BarChart3, CalendarDays, ShieldAlert, ClipboardList, Users, CheckSquare, AlertTriangle } from 'lucide-react';
@@ -59,6 +59,8 @@ function formatNumber(num: number): string {
 export default function DashboardPage() {
   const { lang } = useLanguage();
   const [kpis] = useState(demoKPIs);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const getProgressColor = (planned: number, actual: number) => {
     const ratio = actual / (planned || 1);
@@ -165,6 +167,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts */}
+      {mounted && (
       <div className="chart-grid">
         {/* S-Curve */}
         <div className="chart-card full-width">
@@ -268,6 +271,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

@@ -74,6 +74,8 @@ export default function HRPage() {
   const { lang } = useLanguage();
   const [personnel, setPersonnel] = useState<PersonnelItem[]>(initialPersonnel);
   const [showModal, setShowModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  React.useEffect(() => { setMounted(true); }, []);
   const [formData, setFormData] = useState({
     name: '',
     role: 'engineer',
@@ -152,6 +154,7 @@ export default function HRPage() {
       </div>
 
       {/* Attendance Chart */}
+      {mounted && (
       <div className="chart-card" style={{ marginBottom: 24 }}>
         <div className="chart-title"><Users size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('hr.attendance', lang)} — {lang === 'fr' ? 'Cette semaine' : 'This week'}</div>
         <ResponsiveContainer width="100%" height={280}>
@@ -169,6 +172,7 @@ export default function HRPage() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+      )}
 
       {/* Personnel Table */}
       <div className="toolbar">

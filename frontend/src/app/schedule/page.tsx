@@ -18,6 +18,8 @@ const demoActivities = [
 export default function SchedulePage() {
   const { lang } = useLanguage();
   const [showModal, setShowModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  React.useEffect(() => { setMounted(true); }, []);
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, string> = { completed: 'badge-success', in_progress: 'badge-info', delayed: 'badge-danger', not_started: 'badge-neutral' };
@@ -37,6 +39,7 @@ export default function SchedulePage() {
       </div>
 
       {/* Gantt-style bar chart */}
+      {mounted && (
       <div className="chart-card" style={{ marginBottom: 24 }}>
         <div className="chart-title"><BarChart3 size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('schedule.gantt', lang)} — {t('schedule.progress', lang)}</div>
         <ResponsiveContainer width="100%" height={280}>
@@ -50,6 +53,7 @@ export default function SchedulePage() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+      )}
 
       {/* Activities Table */}
       <div className="toolbar">

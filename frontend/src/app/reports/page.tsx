@@ -181,32 +181,65 @@ export default function ReportsPage() {
   const toggleModule = (key: string) => setModules((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
 
   function downloadPDF(type: ReportType) {
-    const html = buildPdfHtml(lang, type, weekStart, weekEnd, selectedMonth, modules);
-    const win = window.open('', '_blank');
-    if (!win) { alert(lang === 'fr' ? 'Veuillez autoriser les popups pour télécharger le PDF' : 'Please allow popups to download PDF'); return; }
-    win.document.write(html);
-    win.document.close();
-    setTimeout(() => { win.print(); }, 500);
-    setGenerated((prev) => [{ type, format: 'PDF', date: new Date().toLocaleTimeString() }, ...prev]);
+    try {
+      const html = buildPdfHtml(lang, type, weekStart, weekEnd, selectedMonth, modules);
+      // Use a hidden iframe to bypass popup blockers
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      document.body.appendChild(iframe);
+      const iframeDoc = iframe.contentWindow?.document || iframe.contentDocument;
+      if (!iframeDoc) { alert('Erreur lors de la génération du PDF'); return; }
+      iframeDoc.open();
+      iframeDoc.write(html);
+      iframeDoc.close();
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch {
+          // Fallback: open in new tab
+          const win = window.open('', '_blank');
+          if (win) { win.document.write(html); win.document.close(); setTimeout(() => win.print(), 500); }
+        }
+        setTimeout(() => { document.body.removeChild(iframe); }, 1000);
+      }, 600);
+      setGenerated((prev) => [{ type, format: 'PDF', date: new Date().toLocaleTimeString() }, ...prev]);
+    } catch (e) {
+      console.error('PDF generation error:', e);
+      alert(lang === 'fr' ? 'Erreur lors de la génération du PDF' : 'Error generating PDF');
+    }
   }
 
   function downloadExcel(type: ReportType) {
-    const csv = buildExcelCsv(lang, type, modules);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const filename = type === 'weekly'
-      ? `HospitMan_Weekly_${weekStart}.csv`
-      : type === 'monthly'
-        ? `HospitMan_Monthly_${selectedMonth}.csv`
-        : `HospitMan_Custom_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setGenerated((prev) => [{ type, format: 'Excel/CSV', date: new Date().toLocaleTimeString() }, ...prev]);
+    try {
+      const csv = buildExcelCsv(lang, type, modules);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const filename = type === 'weekly'
+        ? `HospitMan_Weekly_${weekStart}.csv`
+        : type === 'monthly'
+          ? `HospitMan_Monthly_${selectedMonth}.csv`
+          : `HospitMan_Custom_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+      setGenerated((prev) => [{ type, format: 'Excel/CSV', date: new Date().toLocaleTimeString() }, ...prev]);
+    } catch (e) {
+      console.error('CSV generation error:', e);
+      alert(lang === 'fr' ? 'Erreur lors de la génération du CSV' : 'Error generating CSV');
+    }
   }
 
   const moduleLabels: Record<string, Record<string, string>> = {
