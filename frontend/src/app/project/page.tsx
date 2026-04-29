@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
 import { Building2, Bell, Check } from 'lucide-react';
@@ -23,38 +23,60 @@ interface TelegramSettings {
   chatId: string;
 }
 
+const defaultProject: ProjectSettings = {
+  name: 'Hôpital Régional 300 Lits',
+  location: 'Tunis, Tunisie',
+  client: 'Ministère de la Santé',
+  bedCount: 300,
+  startDate: '2026-01-15',
+  endDate: '2028-06-30',
+  budget: 85000000,
+  currency: 'TND',
+  description: 'Construction d\'un hôpital régional de 300 lits avec bloc opératoire, urgences, imagerie médicale, et services d\'hospitalisation.',
+  hseEnabled: false,
+};
+
+const defaultTelegram: TelegramSettings = {
+  botToken: '',
+  chatId: '',
+};
+
+const STORAGE_KEY_PROJECT = 'hospitman_project_settings';
+const STORAGE_KEY_TELEGRAM = 'hospitman_telegram_settings';
+
+function loadFromStorage<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved) return JSON.parse(saved);
+  } catch { /* ignore */ }
+  return fallback;
+}
+
 export default function ProjectPage() {
   const { lang } = useLanguage();
+  const [mounted, setMounted] = useState(false);
 
-  const [project, setProject] = useState<ProjectSettings>({
-    name: 'Hôpital Régional 300 Lits',
-    location: 'Tunis, Tunisie',
-    client: 'Ministère de la Santé',
-    bedCount: 300,
-    startDate: '2026-01-15',
-    endDate: '2028-06-30',
-    budget: 85000000,
-    currency: 'TND',
-    description: 'Construction d\'un hôpital régional de 300 lits avec bloc opératoire, urgences, imagerie médicale, et services d\'hospitalisation.',
-    hseEnabled: false,
-  });
-
-  const [telegram, setTelegram] = useState<TelegramSettings>({
-    botToken: '',
-    chatId: '',
-  });
-
+  const [project, setProject] = useState<ProjectSettings>(defaultProject);
+  const [telegram, setTelegram] = useState<TelegramSettings>(defaultTelegram);
   const [projectSaved, setProjectSaved] = useState(false);
   const [telegramSaved, setTelegramSaved] = useState(false);
 
+  // Load saved data from localStorage on mount
+  useEffect(() => {
+    setProject(loadFromStorage(STORAGE_KEY_PROJECT, defaultProject));
+    setTelegram(loadFromStorage(STORAGE_KEY_TELEGRAM, defaultTelegram));
+    setMounted(true);
+  }, []);
+
   const handleProjectSave = () => {
-    // In production, this would call the API
+    localStorage.setItem(STORAGE_KEY_PROJECT, JSON.stringify(project));
     setProjectSaved(true);
     setTimeout(() => setProjectSaved(false), 2500);
   };
 
   const handleTelegramSave = () => {
-    // In production, this would call the API
+    localStorage.setItem(STORAGE_KEY_TELEGRAM, JSON.stringify(telegram));
     setTelegramSaved(true);
     setTimeout(() => setTelegramSaved(false), 2500);
   };
@@ -62,6 +84,20 @@ export default function ProjectPage() {
   const updateProject = (field: keyof ProjectSettings, value: string | number | boolean) => {
     setProject(prev => ({ ...prev, [field]: value }));
   };
+
+  // Avoid hydration mismatch — show nothing until mounted
+  if (!mounted) {
+    return (
+      <div className="animate-in">
+        <div className="page-header">
+          <h1 className="page-title"><Building2 size={24} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8 }} />{lang === 'fr' ? 'Paramètres du Projet' : 'Project Settings'}</h1>
+        </div>
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
+          {lang === 'fr' ? 'Chargement...' : 'Loading...'}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-in">
