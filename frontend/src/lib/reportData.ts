@@ -41,11 +41,11 @@ export const budgetData = [
 ];
 
 export const activityData = [
-  { name_fr: 'Terrassement', name_en: 'Earthworks', lot: 'VRD', planned_start: '2026-01-15', planned_end: '2026-03-15', actual_progress: 100, planned_progress: 100, status: 'completed' },
-  { name_fr: 'Fondations profondes', name_en: 'Deep Foundations', lot: 'Gros Œuvre', planned_start: '2026-02-01', planned_end: '2026-05-01', actual_progress: 85, planned_progress: 95, status: 'delayed' },
-  { name_fr: 'Infrastructure béton RDC', name_en: 'Ground Floor Concrete', lot: 'Gros Œuvre', planned_start: '2026-04-01', planned_end: '2026-07-01', actual_progress: 35, planned_progress: 45, status: 'in_progress' },
-  { name_fr: 'Réseau assainissement', name_en: 'Drainage Network', lot: 'VRD', planned_start: '2026-03-01', planned_end: '2026-05-15', actual_progress: 60, planned_progress: 70, status: 'in_progress' },
-  { name_fr: 'Superstructure 1er étage', name_en: '1st Floor Superstructure', lot: 'Gros Œuvre', planned_start: '2026-06-01', planned_end: '2026-09-01', actual_progress: 0, planned_progress: 0, status: 'not_started' },
+  { name_fr: 'Terrassement', name_en: 'Earthworks', lot_fr: 'VRD', lot_en: 'Roads & Utilities', planned_start: '2026-01-15', planned_end: '2026-03-15', actual_progress: 100, planned_progress: 100, status: 'completed' },
+  { name_fr: 'Fondations profondes', name_en: 'Deep Foundations', lot_fr: 'Gros Œuvre', lot_en: 'Structural Work', planned_start: '2026-02-01', planned_end: '2026-05-01', actual_progress: 85, planned_progress: 95, status: 'delayed' },
+  { name_fr: 'Infrastructure béton RDC', name_en: 'Ground Floor Concrete', lot_fr: 'Gros Œuvre', lot_en: 'Structural Work', planned_start: '2026-04-01', planned_end: '2026-07-01', actual_progress: 35, planned_progress: 45, status: 'in_progress' },
+  { name_fr: 'Réseau assainissement', name_en: 'Drainage Network', lot_fr: 'VRD', lot_en: 'Roads & Utilities', planned_start: '2026-03-01', planned_end: '2026-05-15', actual_progress: 60, planned_progress: 70, status: 'in_progress' },
+  { name_fr: 'Superstructure 1er étage', name_en: '1st Floor Superstructure', lot_fr: 'Gros Œuvre', lot_en: 'Structural Work', planned_start: '2026-06-01', planned_end: '2026-09-01', actual_progress: 0, planned_progress: 0, status: 'not_started' },
 ];
 
 export const riskData = [
@@ -56,16 +56,16 @@ export const riskData = [
 ];
 
 export const qualityData = [
-  { type_fr: 'Béton', type_en: 'Concrete', lot: 'Gros Œuvre', date: '2026-04-25', result: 'conforming' },
-  { type_fr: 'Acier', type_en: 'Steel', lot: 'Gros Œuvre', date: '2026-04-24', result: 'conforming' },
-  { type_fr: 'Étanchéité', type_en: 'Waterproofing', lot: 'Étanchéité', date: '2026-04-22', result: 'non_conforming' },
-  { type_fr: 'Compactage', type_en: 'Compaction', lot: 'VRD', date: '2026-04-20', result: 'conforming' },
+  { type_fr: 'Béton', type_en: 'Concrete', lot_fr: 'Gros Œuvre', lot_en: 'Structural Work', date: '2026-04-25', result: 'conforming' },
+  { type_fr: 'Acier', type_en: 'Steel', lot_fr: 'Gros Œuvre', lot_en: 'Structural Work', date: '2026-04-24', result: 'conforming' },
+  { type_fr: 'Étanchéité', type_en: 'Waterproofing', lot_fr: 'Étanchéité', lot_en: 'Waterproofing', date: '2026-04-22', result: 'non_conforming' },
+  { type_fr: 'Compactage', type_en: 'Compaction', lot_fr: 'VRD', lot_en: 'Roads & Utilities', date: '2026-04-20', result: 'conforming' },
 ];
 
 export const ncrData = [
-  { id: 'NCR-001', desc_fr: 'Défaut étanchéité toiture zone B', desc_en: 'Roof waterproofing defect zone B', severity: 'major', lot: 'Étanchéité', deadline: '2026-05-10', status: 'open' },
-  { id: 'NCR-002', desc_fr: 'Résistance béton insuffisante pieu P12', desc_en: 'Insufficient concrete strength pile P12', severity: 'critical', lot: 'Gros Œuvre', deadline: '2026-05-01', status: 'in_progress' },
-  { id: 'NCR-003', desc_fr: 'Alignement canalisation non conforme', desc_en: 'Non-conforming pipe alignment', severity: 'minor', lot: 'VRD', deadline: '2026-05-15', status: 'open' },
+  { id: 'NCR-001', desc_fr: 'Défaut étanchéité toiture zone B', desc_en: 'Roof waterproofing defect zone B', severity: 'major', lot_fr: 'Étanchéité', lot_en: 'Waterproofing', deadline: '2026-05-10', status: 'open' },
+  { id: 'NCR-002', desc_fr: 'Résistance béton insuffisante pieu P12', desc_en: 'Insufficient concrete strength pile P12', severity: 'critical', lot_fr: 'Gros Œuvre', lot_en: 'Structural Work', deadline: '2026-05-01', status: 'in_progress' },
+  { id: 'NCR-003', desc_fr: 'Alignement canalisation non conforme', desc_en: 'Non-conforming pipe alignment', severity: 'minor', lot_fr: 'VRD', lot_en: 'Roads & Utilities', deadline: '2026-05-15', status: 'open' },
 ];
 
 export const personnelSummary = [
@@ -80,4 +80,9 @@ export const personnelSummary = [
 
 export function fmt(n: number): string {
   return (n / 1000000).toFixed(2) + 'M';
+}
+
+/** Helper to pick the right lot name based on language */
+export function lotName(item: { lot_fr: string; lot_en: string }, lang: Language): string {
+  return lang === 'en' ? item.lot_en : item.lot_fr;
 }

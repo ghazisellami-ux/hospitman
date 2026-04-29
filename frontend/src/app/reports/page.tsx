@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
-import { kpiData, budgetData, activityData, riskData, ncrData, personnelSummary, fmt } from '@/lib/reportData';
+import { kpiData, budgetData, activityData, riskData, ncrData, personnelSummary, fmt, lotName } from '@/lib/reportData';
+import { useProjectSettings } from '@/lib/useProjectSettings';
 import { FileText, FileSpreadsheet, Calendar, BarChart3, Settings, Download, CheckCircle, Clock, PieChart, TrendingUp, Activity } from 'lucide-react';
 import type { Language } from '@/lib/i18n';
 
 type ReportType = 'weekly' | 'monthly' | 'custom';
 
-function buildPdfHtml(lang: Language, type: ReportType, weekStart: string, weekEnd: string, selectedMonth: string, modules: Record<string, boolean>, charts: Record<string, boolean> = {}) {
+function buildPdfHtml(lang: Language, type: ReportType, weekStart: string, weekEnd: string, selectedMonth: string, modules: Record<string, boolean>, charts: Record<string, boolean> = {}, currency: string = 'TND') {
   const l = (fr: string, en: string) => lang === 'fr' ? fr : en;
   const statusLabel = (s: string) => t(`status.${s}`, lang);
 
@@ -91,7 +92,7 @@ ${xLabels}
 <tr><th>${l('Activité', 'Activity')}</th><th>Lot</th><th>${l('Planifié', 'Planned')}</th><th>${l('Réel', 'Actual')}</th><th>${l('Écart', 'Variance')}</th><th>${l('Statut', 'Status')}</th></tr>`;
     activityData.forEach(a => {
       const v = a.actual_progress - a.planned_progress;
-      html += `<tr><td>${lang === 'en' ? a.name_en : a.name_fr}</td><td>${a.lot}</td><td>${a.planned_progress}%</td><td>${a.actual_progress}%</td><td class="${v < 0 ? 'warn' : ''}">${v}%</td><td>${statusLabel(a.status)}</td></tr>`;
+      html += `<tr><td>${lang === 'en' ? a.name_en : a.name_fr}</td><td>${lotName(a, lang)}</td><td>${a.planned_progress}%</td><td>${a.actual_progress}%</td><td class="${v < 0 ? 'warn' : ''}">${v}%</td><td>${statusLabel(a.status)}</td></tr>`;
     });
     html += `</table>`;
   }
@@ -123,7 +124,7 @@ ${xLabels}
 <tr><th>Lot</th><th>${l('Budget Initial', 'Initial Budget')}</th><th>${l('Engagé', 'Committed')}</th><th>${l('Réel', 'Actual')}</th><th>EAC</th><th>Variance</th></tr>`;
     budgetData.forEach(b => {
       const variance = b.eac - b.initial;
-      html += `<tr><td>${lang === 'en' ? b.lot_en : b.lot_fr}</td><td>${fmt(b.initial)} TND</td><td>${fmt(b.committed)} TND</td><td>${fmt(b.actual)} TND</td><td>${fmt(b.eac)} TND</td><td class="${variance > 0 ? 'warn' : 'ok'}">${variance > 0 ? '+' : ''}${fmt(variance)} TND</td></tr>`;
+      html += `<tr><td>${lang === 'en' ? b.lot_en : b.lot_fr}</td><td>${fmt(b.initial)} ${currency}</td><td>${fmt(b.committed)} ${currency}</td><td>${fmt(b.actual)} ${currency}</td><td>${fmt(b.eac)} ${currency}</td><td class="${variance > 0 ? 'warn' : 'ok'}">${variance > 0 ? '+' : ''}${fmt(variance)} ${currency}</td></tr>`;
     });
     html += `</table>`;
   }
@@ -158,7 +159,7 @@ ${xLabels}
 <p style="margin-bottom:8px">${l('Conformes: 42 | Non-conformes: 7 | NCR ouvertes:', 'Conforming: 42 | Non-conforming: 7 | Open NCRs:')} ${ncrData.length}</p><table>
 <tr><th>N°</th><th>Description</th><th>${l('Sévérité', 'Severity')}</th><th>Lot</th><th>Deadline</th><th>${l('Statut', 'Status')}</th></tr>`;
     ncrData.forEach(n => {
-      html += `<tr><td>${n.id}</td><td>${lang === 'en' ? n.desc_en : n.desc_fr}</td><td>${n.severity.toUpperCase()}</td><td>${n.lot}</td><td>${n.deadline}</td><td>${statusLabel(n.status)}</td></tr>`;
+      html += `<tr><td>${n.id}</td><td>${lang === 'en' ? n.desc_en : n.desc_fr}</td><td>${n.severity.toUpperCase()}</td><td>${lotName(n, lang)}</td><td>${n.deadline}</td><td>${statusLabel(n.status)}</td></tr>`;
     });
     html += `</table>`;
   }
@@ -263,7 +264,7 @@ ${cells}
   return html;
 }
 
-function buildExcelCsv(lang: Language, type: ReportType, modules: Record<string, boolean>) {
+function buildExcelCsv(lang: Language, type: ReportType, modules: Record<string, boolean>, currency: string = 'TND') {
   const l = (fr: string, en: string) => lang === 'fr' ? fr : en;
   const statusLabel = (s: string) => t(`status.${s}`, lang);
   const rows: string[][] = [];
@@ -282,7 +283,7 @@ function buildExcelCsv(lang: Language, type: ReportType, modules: Record<string,
   if (type !== 'custom' || modules.schedule) {
     sep(l('PLANNING', 'SCHEDULE'));
     rows.push([l('Activité', 'Activity'), 'Lot', l('Début', 'Start'), l('Fin', 'End'), l('Planifié %', 'Planned %'), l('Réel %', 'Actual %'), l('Statut', 'Status')]);
-    activityData.forEach(a => rows.push([lang === 'en' ? a.name_en : a.name_fr, a.lot, a.planned_start, a.planned_end, `${a.planned_progress}`, `${a.actual_progress}`, statusLabel(a.status)]));
+    activityData.forEach(a => rows.push([lang === 'en' ? a.name_en : a.name_fr, lotName(a, lang), a.planned_start, a.planned_end, `${a.planned_progress}`, `${a.actual_progress}`, statusLabel(a.status)]));
   }
 
   if (type !== 'custom' || modules.cost) {
@@ -294,7 +295,7 @@ function buildExcelCsv(lang: Language, type: ReportType, modules: Record<string,
   if (type !== 'custom' || modules.quality) {
     sep('NCR');
     rows.push(['ID', 'Description', l('Sévérité', 'Severity'), 'Lot', 'Deadline', l('Statut', 'Status')]);
-    ncrData.forEach(n => rows.push([n.id, lang === 'en' ? n.desc_en : n.desc_fr, n.severity, n.lot, n.deadline, statusLabel(n.status)]));
+    ncrData.forEach(n => rows.push([n.id, lang === 'en' ? n.desc_en : n.desc_fr, n.severity, lotName(n, lang), n.deadline, statusLabel(n.status)]));
   }
 
   if (type !== 'custom' || modules.risk) {
@@ -315,6 +316,7 @@ function buildExcelCsv(lang: Language, type: ReportType, modules: Record<string,
 
 export default function ReportsPage() {
   const { lang } = useLanguage();
+  const { currency } = useProjectSettings();
   const [weekStart, setWeekStart] = useState('2026-04-27');
   const [weekEnd, setWeekEnd] = useState('2026-05-03');
   const [selectedMonth, setSelectedMonth] = useState('2026-04');
@@ -331,7 +333,7 @@ export default function ReportsPage() {
 
   function downloadPDF(type: ReportType) {
     try {
-      const html = buildPdfHtml(lang, type, weekStart, weekEnd, selectedMonth, modules, type === 'custom' ? charts : { scurve: true, gantt: true, budget_chart: true, quality_pie: true, risk_matrix: true });
+      const html = buildPdfHtml(lang, type, weekStart, weekEnd, selectedMonth, modules, type === 'custom' ? charts : { scurve: true, gantt: true, budget_chart: true, quality_pie: true, risk_matrix: true }, currency);
       // Use a hidden iframe to bypass popup blockers
       const iframe = document.createElement('iframe');
       iframe.style.position = 'fixed';
@@ -366,7 +368,7 @@ export default function ReportsPage() {
 
   function downloadExcel(type: ReportType) {
     try {
-      const csv = buildExcelCsv(lang, type, modules);
+      const csv = buildExcelCsv(lang, type, modules, currency);
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
