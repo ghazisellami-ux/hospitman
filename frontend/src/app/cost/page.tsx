@@ -4,6 +4,7 @@ import React from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
 import { costBudgets, costInvoices, biLot, invoiceStatusLabels, type Language } from '@/lib/demoData';
+import { useProjectSettings } from '@/lib/useProjectSettings';
 import { Coins, Receipt } from 'lucide-react';
 
 const fmt = (n: number) => (n / 1000000).toFixed(2) + 'M';
@@ -11,6 +12,7 @@ const fmt = (n: number) => (n / 1000000).toFixed(2) + 'M';
 export default function CostPage() {
   const { lang } = useLanguage();
   const l = lang as Language;
+  const { currency } = useProjectSettings();
   const totalInitial = costBudgets.reduce((s, b) => s + b.initial, 0);
   const totalActual = costBudgets.reduce((s, b) => s + b.actual, 0);
   const totalEAC = costBudgets.reduce((s, b) => s + b.eac, 0);
@@ -26,7 +28,7 @@ export default function CostPage() {
         <div className="kpi-card info">
           <div className="kpi-label">{l === 'fr' ? 'Budget Total' : 'Total Budget'}</div>
           <div className="kpi-value" style={{ fontSize: 24 }}>{fmt(totalInitial)}</div>
-          <div className="kpi-sub">TND</div>
+          <div className="kpi-sub">{currency}</div>
         </div>
         <div className="kpi-card success">
           <div className="kpi-label">{l === 'fr' ? 'Dépenses Réelles' : 'Actual Cost'}</div>
@@ -67,10 +69,10 @@ export default function CostPage() {
             {costBudgets.map((b, i) => (
               <tr key={i}>
                 <td style={{ fontWeight: 600 }}>{biLot(b.lot, l)}</td>
-                <td>{fmt(b.initial)} TND</td>
-                <td>{fmt(b.committed)} TND</td>
-                <td style={{ fontWeight: 600 }}>{fmt(b.actual)} TND</td>
-                <td>{fmt(b.eac)} TND</td>
+                <td>{fmt(b.initial)} {currency}</td>
+                <td>{fmt(b.committed)} {currency}</td>
+                <td style={{ fontWeight: 600 }}>{fmt(b.actual)} {currency}</td>
+                <td>{fmt(b.eac)} {currency}</td>
                 <td style={{ color: b.eac > b.initial ? '#ef4444' : '#10b981', fontWeight: 600 }}>
                   {b.eac > b.initial ? '+' : ''}{fmt(b.eac - b.initial)}
                 </td>
@@ -101,7 +103,7 @@ export default function CostPage() {
               <tr key={inv.id}>
                 <td style={{ fontWeight: 600 }}>{inv.id}</td>
                 <td>{biLot(inv.lot, l)}</td>
-                <td style={{ fontWeight: 600 }}>{(inv.amount / 1000000).toFixed(2)}M TND</td>
+                <td style={{ fontWeight: 600 }}>{(inv.amount / 1000000).toFixed(2)}M {currency}</td>
                 <td style={{ color: 'var(--text-secondary)' }}>{inv.date}</td>
                 <td>
                   <span className={`badge ${inv.status === 'paid' ? 'badge-success' : inv.status === 'approved' ? 'badge-info' : 'badge-warning'}`}>

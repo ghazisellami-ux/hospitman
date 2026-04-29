@@ -30,9 +30,17 @@ export default function RiskPage() {
   const { lang } = useLanguage();
   const l = lang as Language;
 
-  const [risks, setRisks] = useState<RiskItem[]>(
-    riskItems.map(r => ({ id: r.id, desc: r[`desc_${l}`], category: r.category, probability: r.probability, impact: r.impact, score: r.score, status: r.status, responsible: r.responsible }))
-  );
+  // Store user-added items separately — demo data is always translated at render
+  const [addedRisks, setAddedRisks] = useState<RiskItem[]>([]);
+
+  // Translate demo data at render (reactive to lang change)
+  const demoRisks: RiskItem[] = riskItems.map(r => ({
+    id: r.id, desc: r[`desc_${l}`], category: r.category, probability: r.probability,
+    impact: r.impact, score: r.score, status: r.status, responsible: r.responsible
+  }));
+
+  const risks = [...demoRisks, ...addedRisks];
+
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
     desc: '', category: 'technical', probability: 'medium', impact: 'moderate', status: 'identified', responsible: responsibles[0],
@@ -49,7 +57,7 @@ export default function RiskPage() {
     if (!form.desc.trim()) return;
     const score = (probScore[form.probability] || 3) * (impactScore[form.impact] || 2);
     const newRisk: RiskItem = { id: risks.length + 1, desc: form.desc, category: form.category, probability: form.probability, impact: form.impact, score, status: form.status, responsible: form.responsible };
-    setRisks([...risks, newRisk]);
+    setAddedRisks([...addedRisks, newRisk]);
     setShowModal(false);
     setForm({ desc: '', category: 'technical', probability: 'medium', impact: 'moderate', status: 'identified', responsible: responsibles[0] });
   };

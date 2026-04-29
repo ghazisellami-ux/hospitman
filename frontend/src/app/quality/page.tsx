@@ -29,38 +29,52 @@ export default function QualityPage() {
   const l = lang as Language;
   const lots = lotNames[l];
 
-  const [inspections, setInspections] = useState<Inspection[]>(
-    qualityInspections.map(i => ({ id: i.id, type: i[`type_${l}`], lot: biLot(i.lot, l), date: i.date, inspector: i.inspector, result: i.result }))
-  );
-  const [ncrs, setNCRs] = useState<NCR[]>(
-    qualityNCRs.map(n => ({ id: n.id, description: n[`desc_${l}`], severity: n.severity, lot: biLot(n.lot, l), deadline: n.deadline, status: n.status }))
-  );
+  // Store user-added items separately — demo data is always translated at render
+  const [addedInspections, setAddedInspections] = useState<Inspection[]>([]);
+  const [addedNCRs, setAddedNCRs] = useState<NCR[]>([]);
+
+  // Translate demo data at render (reactive to lang change)
+  const demoInsp: Inspection[] = qualityInspections.map(i => ({
+    id: i.id, type: i[`type_${l}`], lot: biLot(i.lot, l), date: i.date, inspector: i.inspector, result: i.result
+  }));
+  const demoNCR: NCR[] = qualityNCRs.map(n => ({
+    id: n.id, description: n[`desc_${l}`], severity: n.severity, lot: biLot(n.lot, l), deadline: n.deadline, status: n.status
+  }));
+
+  const inspections = [...demoInsp, ...addedInspections];
+  const ncrs = [...demoNCR, ...addedNCRs];
 
   // Inspection modal
   const [showInspModal, setShowInspModal] = useState(false);
-  const [inspForm, setInspForm] = useState({ type: '', lot: lots[0], date: '', inspector: '', result: 'pending' });
+  const [inspForm, setInspForm] = useState({ type: '', lot: '', date: '', inspector: '', result: 'pending' });
 
   // NCR modal
   const [showNCRModal, setShowNCRModal] = useState(false);
-  const [ncrForm, setNCRForm] = useState({ description: '', severity: 'minor', lot: lots[0], deadline: '', status: 'open' });
+  const [ncrForm, setNCRForm] = useState({ description: '', severity: 'minor', lot: '', deadline: '', status: 'open' });
 
   const resultBadge = (r: string) => r === 'conforming' ? 'badge-success' : r === 'non_conforming' ? 'badge-danger' : 'badge-warning';
   const sevBadge = (s: string) => s === 'critical' ? 'badge-danger' : s === 'major' ? 'badge-warning' : 'badge-info';
 
   const handleAddInspection = () => {
     if (!inspForm.type.trim() || !inspForm.date || !inspForm.inspector.trim()) return;
-    const newInsp: Inspection = { id: inspections.length + 1, type: inspForm.type, lot: inspForm.lot, date: inspForm.date, inspector: inspForm.inspector, result: inspForm.result };
-    setInspections([...inspections, newInsp]);
+    const newInsp: Inspection = {
+      id: inspections.length + 1, type: inspForm.type, lot: inspForm.lot || lots[0],
+      date: inspForm.date, inspector: inspForm.inspector, result: inspForm.result
+    };
+    setAddedInspections([...addedInspections, newInsp]);
     setShowInspModal(false);
-    setInspForm({ type: '', lot: lots[0], date: '', inspector: '', result: 'pending' });
+    setInspForm({ type: '', lot: '', date: '', inspector: '', result: 'pending' });
   };
 
   const handleAddNCR = () => {
     if (!ncrForm.description.trim() || !ncrForm.deadline) return;
-    const newNCR: NCR = { id: `NCR-${String(ncrs.length + 1).padStart(3, '0')}`, description: ncrForm.description, severity: ncrForm.severity, lot: ncrForm.lot, deadline: ncrForm.deadline, status: ncrForm.status };
-    setNCRs([...ncrs, newNCR]);
+    const newNCR: NCR = {
+      id: `NCR-${String(ncrs.length + 1).padStart(3, '0')}`, description: ncrForm.description,
+      severity: ncrForm.severity, lot: ncrForm.lot || lots[0], deadline: ncrForm.deadline, status: ncrForm.status
+    };
+    setAddedNCRs([...addedNCRs, newNCR]);
     setShowNCRModal(false);
-    setNCRForm({ description: '', severity: 'minor', lot: lots[0], deadline: '', status: 'open' });
+    setNCRForm({ description: '', severity: 'minor', lot: '', deadline: '', status: 'open' });
   };
 
   const conforming = inspections.filter(i => i.result === 'conforming').length;
@@ -140,7 +154,7 @@ export default function QualityPage() {
               </div>
               <div className="form-group">
                 <label className="form-label">Lot</label>
-                <select className="form-select" value={inspForm.lot} onChange={(e) => setInspForm({ ...inspForm, lot: e.target.value })}>
+                <select className="form-select" value={inspForm.lot || lots[0]} onChange={(e) => setInspForm({ ...inspForm, lot: e.target.value })}>
                   {lots.map(lt => <option key={lt} value={lt}>{lt}</option>)}
                 </select>
               </div>
@@ -192,7 +206,7 @@ export default function QualityPage() {
               </div>
               <div className="form-group">
                 <label className="form-label">Lot</label>
-                <select className="form-select" value={ncrForm.lot} onChange={(e) => setNCRForm({ ...ncrForm, lot: e.target.value })}>
+                <select className="form-select" value={ncrForm.lot || lots[0]} onChange={(e) => setNCRForm({ ...ncrForm, lot: e.target.value })}>
                   {lots.map(lt => <option key={lt} value={lt}>{lt}</option>)}
                 </select>
               </div>

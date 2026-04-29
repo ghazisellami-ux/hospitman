@@ -29,12 +29,20 @@ export default function CommunicationPage() {
   const { lang } = useLanguage();
   const l = lang as Language;
 
-  const [comms, setComms] = useState<CommItem[]>(
-    commMeetings.map(c => ({ id: c.id, type: c.type, date: c.date, subject: c[`subject_${l}`], participants: c.participants }))
-  );
-  const [actions, setActions] = useState<ActionItem[]>(
-    commActions.map(a => ({ id: a.id, desc: a[`desc_${l}`], assigned: a.assigned, deadline: a.deadline, status: a.status }))
-  );
+  // Store user-added items separately — demo data is always translated at render
+  const [addedComms, setAddedComms] = useState<CommItem[]>([]);
+  const [addedActions, setAddedActions] = useState<ActionItem[]>([]);
+
+  // Translate demo data at render (reactive to lang change)
+  const demoComms: CommItem[] = commMeetings.map(c => ({
+    id: c.id, type: c.type, date: c.date, subject: c[`subject_${l}`], participants: c.participants
+  }));
+  const demoActs: ActionItem[] = commActions.map(a => ({
+    id: a.id, desc: a[`desc_${l}`], assigned: a.assigned, deadline: a.deadline, status: a.status
+  }));
+
+  const comms = [...demoComms, ...addedComms];
+  const actions = [...demoActs, ...addedActions];
 
   const [showCommModal, setShowCommModal] = useState(false);
   const [commForm, setCommForm] = useState({ type: 'meeting', date: '', subject: '', participants: '' });
@@ -45,7 +53,7 @@ export default function CommunicationPage() {
   const handleAddComm = () => {
     if (!commForm.subject.trim() || !commForm.date) return;
     const newComm: CommItem = { id: comms.length + 1, type: commForm.type, date: commForm.date, subject: commForm.subject, participants: commForm.participants };
-    setComms([...comms, newComm]);
+    setAddedComms([...addedComms, newComm]);
     setShowCommModal(false);
     setCommForm({ type: 'meeting', date: '', subject: '', participants: '' });
   };
@@ -53,7 +61,7 @@ export default function CommunicationPage() {
   const handleAddAction = () => {
     if (!actionForm.desc.trim() || !actionForm.deadline) return;
     const newAction: ActionItem = { id: actions.length + 1, desc: actionForm.desc, assigned: actionForm.assigned, deadline: actionForm.deadline, status: 'open' };
-    setActions([...actions, newAction]);
+    setAddedActions([...addedActions, newAction]);
     setShowActionModal(false);
     setActionForm({ desc: '', assigned: assignees[0], deadline: '' });
   };

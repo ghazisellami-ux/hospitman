@@ -8,6 +8,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, Area, AreaChart
 } from 'recharts';
 import ChartWrapper from '@/components/ChartWrapper';
+import { useProjectSettings } from '@/lib/useProjectSettings';
+import { biLot, type Language } from '@/lib/demoData';
 import { TrendingUp, Clock, Coins, BarChart3, CalendarDays, ShieldAlert, ClipboardList, Users, CheckSquare, AlertTriangle } from 'lucide-react';
 
 // Demo data for when API is not available
@@ -36,20 +38,27 @@ const demoSCurve = [
   { week_date: 'S24', planned_progress: 45, actual_progress: 38.5, planned_value: 38250, earned_value: 32725, actual_cost: 35500 },
 ];
 
-const demoBudget = [
-  { name: 'Gros Œuvre', initial: 25000, committed: 22000, actual: 18000 },
-  { name: 'VRD', initial: 8000, committed: 7500, actual: 5200 },
-  { name: 'Électricité', initial: 12000, committed: 10000, actual: 3500 },
-  { name: 'Plomberie', initial: 9000, committed: 8000, actual: 2800 },
-  { name: 'CVC', initial: 15000, committed: 12000, actual: 4000 },
-  { name: 'Menuiserie', initial: 6000, committed: 4500, actual: 1200 },
+const demoBudgetRaw = [
+  { lot: 'Gros Œuvre', initial: 25000, committed: 22000, actual: 18000 },
+  { lot: 'VRD', initial: 8000, committed: 7500, actual: 5200 },
+  { lot: 'Électricité', initial: 12000, committed: 10000, actual: 3500 },
+  { lot: 'Plomberie', initial: 9000, committed: 8000, actual: 2800 },
+  { lot: 'CVC', initial: 15000, committed: 12000, actual: 4000 },
+  { lot: 'Menuiserie', initial: 6000, committed: 4500, actual: 1200 },
 ];
 
-const demoQuality = [
-  { name: 'Conforme', value: 42, color: '#10b981' },
-  { name: 'Non-conforme', value: 7, color: '#ef4444' },
-  { name: 'En attente', value: 5, color: '#f59e0b' },
-];
+const demoQualityRaw = {
+  fr: [
+    { name: 'Conforme', value: 42, color: '#10b981' },
+    { name: 'Non-conforme', value: 7, color: '#ef4444' },
+    { name: 'En attente', value: 5, color: '#f59e0b' },
+  ],
+  en: [
+    { name: 'Conforming', value: 42, color: '#10b981' },
+    { name: 'Non-conforming', value: 7, color: '#ef4444' },
+    { name: 'Pending', value: 5, color: '#f59e0b' },
+  ],
+};
 
 function formatNumber(num: number): string {
   if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
@@ -59,7 +68,11 @@ function formatNumber(num: number): string {
 
 export default function DashboardPage() {
   const { lang } = useLanguage();
+  const l = lang as Language;
+  const { currency } = useProjectSettings();
   const [kpis] = useState(demoKPIs);
+  const demoBudget = demoBudgetRaw.map(b => ({ name: biLot(b.lot, l), initial: b.initial, committed: b.committed, actual: b.actual }));
+  const demoQuality = demoQualityRaw[l];
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -120,7 +133,7 @@ export default function DashboardPage() {
             <div className="kpi-icon info"><BarChart3 size={18} /></div>
           </div>
           <div className="kpi-value">{kpis.budget_consumed_pct}%</div>
-          <div className="kpi-sub">{formatNumber(kpis.total_actual_cost)} / {formatNumber(kpis.total_budget)} TND</div>
+          <div className="kpi-sub">{formatNumber(kpis.total_actual_cost)} / {formatNumber(kpis.total_budget)} {currency}</div>
           <div style={{ marginTop: 8 }}>
             <div className="progress-bar">
               <div className="progress-bar-fill blue" style={{ width: `${kpis.budget_consumed_pct}%` }} />
