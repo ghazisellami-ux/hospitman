@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Users } from 'lucide-react';
+import ChartWrapper from '@/components/ChartWrapper';
 
 interface PersonnelItem {
   id: number;
@@ -157,8 +158,9 @@ export default function HRPage() {
       {mounted && (
       <div className="chart-card" style={{ marginBottom: 24 }}>
         <div className="chart-title"><Users size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('hr.attendance', lang)} — {lang === 'fr' ? 'Cette semaine' : 'This week'}</div>
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={demoAttendance}>
+        <ChartWrapper height={280}>
+          {(w, h) => (
+          <BarChart data={demoAttendance} width={w} height={h}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
             <XAxis dataKey="date" stroke="#5c6478" fontSize={12} />
             <YAxis stroke="#5c6478" fontSize={12} />
@@ -170,7 +172,8 @@ export default function HRPage() {
             <Bar dataKey="plomb" name={chartLegend.plomb[lang]} fill="#8b5cf6" stackId="a" />
             <Bar dataKey="cvc" name={lang === 'fr' ? 'CVC' : 'HVAC'} fill="#06b6d4" stackId="a" />
           </BarChart>
-        </ResponsiveContainer>
+          )}
+        </ChartWrapper>
       </div>
       )}
 

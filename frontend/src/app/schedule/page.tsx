@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { BarChart3, ClipboardList, Upload } from 'lucide-react';
+import ChartWrapper from '@/components/ChartWrapper';
 
 const demoActivities = [
   { id: 1, name: 'Terrassement', lot: 'VRD', planned_start: '2026-01-15', planned_end: '2026-03-15', actual_start: '2026-01-20', actual_progress: 100, planned_progress: 100, status: 'completed' },
@@ -42,8 +43,9 @@ export default function SchedulePage() {
       {mounted && (
       <div className="chart-card" style={{ marginBottom: 24 }}>
         <div className="chart-title"><BarChart3 size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('schedule.gantt', lang)} — {t('schedule.progress', lang)}</div>
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={ganttData} layout="vertical">
+        <ChartWrapper height={280}>
+          {(w, h) => (
+          <BarChart data={ganttData} layout="vertical" width={w} height={h}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
             <XAxis type="number" domain={[0, 100]} stroke="#5c6478" fontSize={11} unit="%" />
             <YAxis type="category" dataKey="name" stroke="#5c6478" fontSize={11} width={160} />
@@ -51,7 +53,8 @@ export default function SchedulePage() {
             <Bar dataKey="planned" name={t('common.planned', lang)} fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={14} />
             <Bar dataKey="actual" name={t('common.actual', lang)} fill="#10b981" radius={[0, 4, 4, 0]} barSize={14} />
           </BarChart>
-        </ResponsiveContainer>
+          )}
+        </ChartWrapper>
       </div>
       )}
 

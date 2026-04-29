@@ -5,8 +5,9 @@ import { useLanguage } from './layout';
 import { t } from '@/lib/i18n';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, Area, AreaChart
 } from 'recharts';
+import ChartWrapper from '@/components/ChartWrapper';
 import { TrendingUp, Clock, Coins, BarChart3, CalendarDays, ShieldAlert, ClipboardList, Users, CheckSquare, AlertTriangle } from 'lucide-react';
 
 // Demo data for when API is not available
@@ -172,8 +173,9 @@ export default function DashboardPage() {
         {/* S-Curve */}
         <div className="chart-card full-width">
           <div className="chart-title"><TrendingUp size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('dashboard.scurve', lang)}</div>
-          <ResponsiveContainer width="100%" height={320}>
-            <AreaChart data={demoSCurve}>
+          <ChartWrapper height={320}>
+            {(w, h) => (
+            <AreaChart data={demoSCurve} width={w} height={h}>
               <defs>
                 <linearGradient id="gradPlanned" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -194,14 +196,16 @@ export default function DashboardPage() {
               <Area type="monotone" dataKey="planned_progress" name={lang === 'fr' ? 'Planifié' : 'Planned'} stroke="#3b82f6" fill="url(#gradPlanned)" strokeWidth={2} />
               <Area type="monotone" dataKey="actual_progress" name={lang === 'fr' ? 'Réel' : 'Actual'} stroke="#10b981" fill="url(#gradActual)" strokeWidth={2} />
             </AreaChart>
-          </ResponsiveContainer>
+            )}
+          </ChartWrapper>
         </div>
 
         {/* Budget Breakdown */}
         <div className="chart-card">
           <div className="chart-title"><Coins size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('dashboard.budgetBreakdown', lang)}</div>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={demoBudget} layout="vertical">
+          <ChartWrapper height={280}>
+            {(w, h) => (
+            <BarChart data={demoBudget} layout="vertical" width={w} height={h}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
               <XAxis type="number" stroke="#5c6478" fontSize={11} />
               <YAxis type="category" dataKey="name" stroke="#5c6478" fontSize={11} width={80} />
@@ -211,14 +215,16 @@ export default function DashboardPage() {
               <Bar dataKey="committed" name={lang === 'fr' ? 'Engagé' : 'Committed'} fill="#8b5cf6" radius={[0, 4, 4, 0]} />
               <Bar dataKey="actual" name={lang === 'fr' ? 'Réel' : 'Actual'} fill="#10b981" radius={[0, 4, 4, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+            )}
+          </ChartWrapper>
         </div>
 
         {/* Quality Pie */}
         <div className="chart-card">
           <div className="chart-title"><CheckSquare size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('dashboard.qualityOverview', lang)}</div>
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
+          <ChartWrapper height={280}>
+            {(w, h) => (
+            <PieChart width={w} height={h}>
               <Pie
                 data={demoQuality}
                 cx="50%"
@@ -235,7 +241,8 @@ export default function DashboardPage() {
               </Pie>
               <Tooltip contentStyle={{ background: '#1a2236', border: '1px solid #334155', borderRadius: 8, color: '#f0f4fc' }} />
             </PieChart>
-          </ResponsiveContainer>
+            )}
+          </ChartWrapper>
         </div>
 
         {/* Risk Heatmap */}
