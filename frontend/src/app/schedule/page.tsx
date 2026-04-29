@@ -3,21 +3,14 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
+import { scheduleActivities, biLot, lotNames, type Language } from '@/lib/demoData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { BarChart3, ClipboardList, Upload } from 'lucide-react';
 import ChartWrapper from '@/components/ChartWrapper';
 
-const demoActivities = [
-  { id: 1, name: 'Terrassement', lot: 'VRD', planned_start: '2026-01-15', planned_end: '2026-03-15', actual_start: '2026-01-20', actual_progress: 100, planned_progress: 100, status: 'completed' },
-  { id: 2, name: 'Fondations profondes', lot: 'Gros Œuvre', planned_start: '2026-02-01', planned_end: '2026-05-01', actual_start: '2026-02-10', actual_progress: 85, planned_progress: 95, status: 'delayed' },
-  { id: 3, name: 'Infrastructure béton RDC', lot: 'Gros Œuvre', planned_start: '2026-04-01', planned_end: '2026-07-01', actual_start: '2026-04-15', actual_progress: 35, planned_progress: 45, status: 'in_progress' },
-  { id: 4, name: 'Réseau assainissement', lot: 'VRD', planned_start: '2026-03-01', planned_end: '2026-05-15', actual_start: '2026-03-10', actual_progress: 60, planned_progress: 70, status: 'in_progress' },
-  { id: 5, name: 'Superstructure 1er étage', lot: 'Gros Œuvre', planned_start: '2026-06-01', planned_end: '2026-09-01', actual_progress: 0, planned_progress: 0, status: 'not_started' },
-  { id: 6, name: 'Chemin de câble principal', lot: 'Électricité', planned_start: '2026-07-01', planned_end: '2026-10-01', actual_progress: 0, planned_progress: 0, status: 'not_started' },
-];
-
 export default function SchedulePage() {
   const { lang } = useLanguage();
+  const l = lang as Language;
   const [showModal, setShowModal] = useState(false);
   const [mounted, setMounted] = useState(false);
   React.useEffect(() => { setMounted(true); }, []);
@@ -27,8 +20,8 @@ export default function SchedulePage() {
     return map[status] || 'badge-neutral';
   };
 
-  const ganttData = demoActivities.map(a => ({
-    name: a.name,
+  const ganttData = scheduleActivities.map(a => ({
+    name: a[`name_${l}`],
     planned: a.planned_progress,
     actual: a.actual_progress,
   }));
@@ -62,7 +55,7 @@ export default function SchedulePage() {
       <div className="toolbar">
         <h2 style={{ fontSize: 18, fontWeight: 700 }}><ClipboardList size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('schedule.activities', lang)}</h2>
         <div className="toolbar-right">
-          <button className="btn btn-secondary btn-sm"><Upload size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />{lang === 'fr' ? 'Importer CSV' : 'Import CSV'}</button>
+          <button className="btn btn-secondary btn-sm"><Upload size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />{l === 'fr' ? 'Importer CSV' : 'Import CSV'}</button>
           <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ {t('schedule.addActivity', lang)}</button>
         </div>
       </div>
@@ -72,19 +65,19 @@ export default function SchedulePage() {
             <tr>
               <th>{t('common.name', lang)}</th>
               <th>Lot</th>
-              <th>{lang === 'fr' ? 'Début Planifié' : 'Planned Start'}</th>
-              <th>{lang === 'fr' ? 'Fin Planifiée' : 'Planned End'}</th>
+              <th>{l === 'fr' ? 'Début Planifié' : 'Planned Start'}</th>
+              <th>{l === 'fr' ? 'Fin Planifiée' : 'Planned End'}</th>
               <th>{t('common.planned', lang)} %</th>
               <th>{t('common.actual', lang)} %</th>
-              <th>{lang === 'fr' ? 'Écart' : 'Variance'}</th>
+              <th>{l === 'fr' ? 'Écart' : 'Variance'}</th>
               <th>{t('common.status', lang)}</th>
             </tr>
           </thead>
           <tbody>
-            {demoActivities.map((a) => (
+            {scheduleActivities.map((a) => (
               <tr key={a.id}>
-                <td style={{ fontWeight: 600 }}>{a.name}</td>
-                <td><span className="badge badge-info">{a.lot}</span></td>
+                <td style={{ fontWeight: 600 }}>{a[`name_${l}`]}</td>
+                <td><span className="badge badge-info">{biLot(a.lot, l)}</span></td>
                 <td style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{a.planned_start}</td>
                 <td style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{a.planned_end}</td>
                 <td>{a.planned_progress}%</td>
@@ -109,20 +102,22 @@ export default function SchedulePage() {
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label">{t('common.name', lang)}</label>
-                <input className="form-input" placeholder="Nom de l'activité" />
+                <input className="form-input" placeholder={l === 'fr' ? "Nom de l'activité" : 'Activity name'} />
               </div>
               <div className="form-group">
                 <label className="form-label">Lot</label>
-                <select className="form-select"><option>Gros Œuvre</option><option>VRD</option><option>Électricité</option></select>
+                <select className="form-select">
+                  {lotNames[l].map(lot => <option key={lot}>{lot}</option>)}
+                </select>
               </div>
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label className="form-label">{lang === 'fr' ? 'Date début' : 'Start date'}</label>
+                <label className="form-label">{l === 'fr' ? 'Date début' : 'Start date'}</label>
                 <input className="form-input" type="date" />
               </div>
               <div className="form-group">
-                <label className="form-label">{lang === 'fr' ? 'Date fin' : 'End date'}</label>
+                <label className="form-label">{l === 'fr' ? 'Date fin' : 'End date'}</label>
                 <input className="form-input" type="date" />
               </div>
             </div>

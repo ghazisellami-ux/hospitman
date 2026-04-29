@@ -3,26 +3,12 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
+import { scopeLots, scopeCRs, lotNames, type Language } from '@/lib/demoData';
 import { Target, FileEdit } from 'lucide-react';
-
-const demoLots = [
-  { id: 1, name: 'Gros Œuvre', description: 'Structure béton armé, fondations', contractor: 'BTP STAR', status: 'in_progress' },
-  { id: 2, name: 'VRD', description: 'Voirie et Réseaux Divers', contractor: 'VRD Tunisie', status: 'in_progress' },
-  { id: 3, name: 'Électricité Courant Fort', description: 'Distribution électrique, TGBT', contractor: 'ElecPro', status: 'planned' },
-  { id: 4, name: 'Électricité Courant Faible', description: 'Réseau informatique, sécurité', contractor: 'ElecPro', status: 'planned' },
-  { id: 5, name: 'Plomberie Sanitaire', description: 'Alimentation eau, évacuation', contractor: 'HydroTech', status: 'not_started' },
-  { id: 6, name: 'CVC', description: 'Chauffage, Ventilation, Climatisation', contractor: 'ClimaPro', status: 'not_started' },
-  { id: 7, name: 'Menuiserie Aluminium', description: 'Portes, fenêtres, mur rideau', contractor: 'AluDesign', status: 'planned' },
-  { id: 8, name: 'Étanchéité', description: 'Étanchéité toiture et sous-sol', contractor: 'WaterStop', status: 'not_started' },
-];
-
-const demoCRs = [
-  { id: 1, title: 'Modification emplacement bloc opératoire', cost_impact: 150000, schedule_impact_days: 15, status: 'pending' },
-  { id: 2, title: 'Ajout système gaz médicaux supplémentaire', cost_impact: 85000, schedule_impact_days: 7, status: 'approved' },
-];
 
 export default function ScopePage() {
   const { lang } = useLanguage();
+  const l = lang as Language;
   const [showModal, setShowModal] = useState(false);
 
   const getStatusBadge = (status: string) => {
@@ -56,16 +42,16 @@ export default function ScopePage() {
               <th>#</th>
               <th>{t('common.name', lang)}</th>
               <th>{t('common.description', lang)}</th>
-              <th>{lang === 'fr' ? 'Entrepreneur' : 'Contractor'}</th>
+              <th>{l === 'fr' ? 'Entrepreneur' : 'Contractor'}</th>
               <th>{t('common.status', lang)}</th>
             </tr>
           </thead>
           <tbody>
-            {demoLots.map((lot) => (
+            {scopeLots.map((lot) => (
               <tr key={lot.id}>
                 <td style={{ color: 'var(--text-muted)' }}>{lot.id}</td>
-                <td style={{ fontWeight: 600 }}>{lot.name}</td>
-                <td style={{ color: 'var(--text-secondary)' }}>{lot.description}</td>
+                <td style={{ fontWeight: 600 }}>{lot[`name_${l}`]}</td>
+                <td style={{ color: 'var(--text-secondary)' }}>{lot[`desc_${l}`]}</td>
                 <td>{lot.contractor}</td>
                 <td><span className={`badge ${getStatusBadge(lot.status)}`}>{t(`status.${lot.status}`, lang)}</span></td>
               </tr>
@@ -77,26 +63,26 @@ export default function ScopePage() {
       {/* Change Requests */}
       <div className="toolbar" style={{ marginTop: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700 }}><FileEdit size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{t('scope.changeRequests', lang)}</h2>
-        <button className="btn btn-secondary btn-sm">+ {lang === 'fr' ? 'Nouvelle demande' : 'New request'}</button>
+        <button className="btn btn-secondary btn-sm">+ {l === 'fr' ? 'Nouvelle demande' : 'New request'}</button>
       </div>
       <div className="data-table-wrapper">
         <table className="data-table">
           <thead>
             <tr>
               <th>#</th>
-              <th>{lang === 'fr' ? 'Titre' : 'Title'}</th>
-              <th>{lang === 'fr' ? 'Impact Coût' : 'Cost Impact'}</th>
-              <th>{lang === 'fr' ? 'Impact Délai' : 'Schedule Impact'}</th>
+              <th>{l === 'fr' ? 'Titre' : 'Title'}</th>
+              <th>{l === 'fr' ? 'Impact Coût' : 'Cost Impact'}</th>
+              <th>{l === 'fr' ? 'Impact Délai' : 'Schedule Impact'}</th>
               <th>{t('common.status', lang)}</th>
             </tr>
           </thead>
           <tbody>
-            {demoCRs.map((cr) => (
+            {scopeCRs.map((cr) => (
               <tr key={cr.id}>
                 <td style={{ color: 'var(--text-muted)' }}>CR-{cr.id}</td>
-                <td style={{ fontWeight: 600 }}>{cr.title}</td>
+                <td style={{ fontWeight: 600 }}>{cr[`title_${l}`]}</td>
                 <td style={{ color: '#f59e0b' }}>+{cr.cost_impact.toLocaleString()} TND</td>
-                <td style={{ color: '#ef4444' }}>+{cr.schedule_impact_days}j</td>
+                <td style={{ color: '#ef4444' }}>+{cr.schedule_impact_days}{l === 'fr' ? 'j' : 'd'}</td>
                 <td><span className={`badge ${getStatusBadge(cr.status)}`}>{t(`status.${cr.status}`, lang)}</span></td>
               </tr>
             ))}
@@ -115,12 +101,12 @@ export default function ScopePage() {
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label">{t('common.name', lang)}</label>
-                <input className="form-input" placeholder="Ex: Gros Œuvre" />
+                <input className="form-input" placeholder={l === 'fr' ? 'Ex: Gros Œuvre' : 'Ex: Structural Work'} />
               </div>
               <div className="form-group">
-                <label className="form-label">{lang === 'fr' ? 'Entrepreneur' : 'Contractor'}</label>
+                <label className="form-label">{l === 'fr' ? 'Entrepreneur' : 'Contractor'}</label>
                 <select className="form-select">
-                  <option>-- Sélectionner --</option>
+                  <option>{l === 'fr' ? '-- Sélectionner --' : '-- Select --'}</option>
                   <option>BTP STAR</option>
                   <option>ElecPro</option>
                 </select>
@@ -128,7 +114,7 @@ export default function ScopePage() {
             </div>
             <div className="form-group">
               <label className="form-label">{t('common.description', lang)}</label>
-              <textarea className="form-textarea" placeholder="Description du lot..." />
+              <textarea className="form-textarea" placeholder={l === 'fr' ? 'Description du lot...' : 'Lot description...'} />
             </div>
             <div className="modal-actions">
               <button className="btn btn-secondary" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</button>
