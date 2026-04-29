@@ -13,6 +13,69 @@ interface Contractor { id: number; name: string; speciality_fr: string; speciali
 interface LotItem { id: number; name_fr: string; name_en: string; desc_fr: string; desc_en: string; contractor: string; status: string; }
 interface CRItem { id: number; title_fr: string; title_en: string; cost_impact: number; schedule_impact_days: number; status: string; }
 
+// ── Spécialités pré-remplies pour chantier hôpital/clinique ──
+const specialities: { fr: string; en: string }[] = [
+  // Gros œuvre & Structure
+  { fr: 'Gros Œuvre / Structure', en: 'Structural Work' },
+  { fr: 'Fondations spéciales', en: 'Special Foundations' },
+  { fr: 'Charpente métallique', en: 'Steel Framework' },
+  { fr: 'Béton armé', en: 'Reinforced Concrete' },
+  // VRD & Terrassement
+  { fr: 'VRD (Voirie et Réseaux Divers)', en: 'Roads & Utilities' },
+  { fr: 'Terrassement', en: 'Earthworks' },
+  { fr: 'Assainissement', en: 'Drainage & Sewage' },
+  { fr: 'Aménagement extérieur / Espaces verts', en: 'Landscaping' },
+  // Enveloppe
+  { fr: 'Étanchéité', en: 'Waterproofing' },
+  { fr: 'Isolation thermique & phonique', en: 'Thermal & Acoustic Insulation' },
+  { fr: 'Toiture / Couverture', en: 'Roofing' },
+  { fr: 'Façades / Mur rideau', en: 'Facades / Curtain Wall' },
+  // Menuiserie
+  { fr: 'Menuiserie aluminium', en: 'Aluminum Joinery' },
+  { fr: 'Menuiserie bois', en: 'Wood Joinery' },
+  { fr: 'Menuiserie métallique / Serrurerie', en: 'Metal Joinery / Ironwork' },
+  // Électricité
+  { fr: 'Électricité Courant Fort (HTA/BT)', en: 'High Voltage Electrical (HV/LV)' },
+  { fr: 'Électricité Courant Faible', en: 'Low Voltage / IT Networks' },
+  { fr: 'Groupe électrogène', en: 'Generator Set' },
+  { fr: 'Onduleur / ASI', en: 'UPS / Uninterruptible Power' },
+  // Fluides
+  { fr: 'Plomberie sanitaire', en: 'Plumbing' },
+  { fr: 'CVC (Chauffage, Ventilation, Climatisation)', en: 'HVAC' },
+  { fr: 'Traitement d\'air / Salle blanche', en: 'Air Handling / Cleanroom' },
+  { fr: 'Protection incendie / Sprinkler', en: 'Fire Protection / Sprinkler' },
+  // Spécialités médicales
+  { fr: 'Gaz médicaux (O₂, N₂O, air, vide)', en: 'Medical Gases (O₂, N₂O, Air, Vacuum)' },
+  { fr: 'Fluides médicaux spéciaux', en: 'Special Medical Fluids' },
+  { fr: 'Équipements biomédicaux', en: 'Biomedical Equipment' },
+  { fr: 'Radiologie / Imagerie médicale', en: 'Radiology / Medical Imaging' },
+  { fr: 'Bloc opératoire (aménagement)', en: 'Operating Theater (fit-out)' },
+  { fr: 'Stérilisation', en: 'Sterilization' },
+  { fr: 'Laboratoire', en: 'Laboratory' },
+  // Sécurité & Systèmes
+  { fr: 'Sécurité incendie (SSI / CMSI)', en: 'Fire Safety (Detection & Alarm)' },
+  { fr: 'Contrôle d\'accès / Vidéosurveillance', en: 'Access Control / CCTV' },
+  { fr: 'Appel malade / Interphonie', en: 'Nurse Call / Intercom' },
+  { fr: 'Réseau informatique / Câblage', en: 'IT Network / Cabling' },
+  { fr: 'Système de gestion technique (GTC/GTB)', en: 'Building Management System (BMS)' },
+  // Transport vertical
+  { fr: 'Ascenseurs / Monte-charges', en: 'Elevators / Freight Lifts' },
+  { fr: 'Transport pneumatique', en: 'Pneumatic Tube System' },
+  // Finitions
+  { fr: 'Peinture', en: 'Painting' },
+  { fr: 'Revêtement de sol (carrelage, vinyle)', en: 'Flooring (Tiles, Vinyl)' },
+  { fr: 'Faux plafond', en: 'False Ceiling' },
+  { fr: 'Cloisons / Doublage', en: 'Partitions / Lining' },
+  { fr: 'Revêtement mural (faïence, HPL)', en: 'Wall Cladding (Tiles, HPL)' },
+  // Cuisine & Buanderie
+  { fr: 'Cuisine hospitalière', en: 'Hospital Kitchen' },
+  { fr: 'Buanderie / Lingerie', en: 'Laundry' },
+  // Divers
+  { fr: 'Signalétique', en: 'Signage / Wayfinding' },
+  { fr: 'Mobilier médical & technique', en: 'Medical & Technical Furniture' },
+  { fr: 'Panneaux solaires / Énergie renouvelable', en: 'Solar Panels / Renewable Energy' },
+];
+
 // ── Demo contractors ───────────────────────────────────────
 const demoContractors: Contractor[] = [
   { id: 1, name: 'BTP STAR', speciality_fr: 'Gros Œuvre / Structure', speciality_en: 'Structural Work', contact: 'contact@btpstar.tn' },
@@ -32,19 +95,20 @@ export default function ScopePage() {
   // ── Contractors ────────────────────────────────────────
   const [contractors, setContractors] = useState<Contractor[]>(demoContractors);
   const [showContractorModal, setShowContractorModal] = useState(false);
-  const [ctrForm, setCtrForm] = useState({ name: '', speciality: '', contact: '' });
+  const [ctrForm, setCtrForm] = useState({ name: '', specialityIdx: -1, contact: '' });
 
   const handleAddContractor = () => {
-    if (!ctrForm.name.trim()) return;
+    if (!ctrForm.name.trim() || ctrForm.specialityIdx < 0) return;
+    const spec = specialities[ctrForm.specialityIdx];
     setContractors(prev => [...prev, {
       id: prev.length + 1,
       name: ctrForm.name,
-      speciality_fr: ctrForm.speciality,
-      speciality_en: autoTranslate(ctrForm.speciality),
+      speciality_fr: spec.fr,
+      speciality_en: spec.en,
       contact: ctrForm.contact,
     }]);
     setShowContractorModal(false);
-    setCtrForm({ name: '', speciality: '', contact: '' });
+    setCtrForm({ name: '', specialityIdx: -1, contact: '' });
   };
 
   // ── Lots ───────────────────────────────────────────────
@@ -213,11 +277,11 @@ export default function ScopePage() {
               <input className="form-input" placeholder="Ex: SociétéBTP" value={ctrForm.name} onChange={e => setCtrForm({ ...ctrForm, name: e.target.value })} />
             </div>
             <div className="form-group">
-              <label className="form-label">{l === 'fr' ? 'Spécialité' : 'Speciality'}</label>
-              <input className="form-input" placeholder={l === 'fr' ? 'Ex: Plomberie Sanitaire' : 'Ex: Plumbing'} value={ctrForm.speciality} onChange={e => setCtrForm({ ...ctrForm, speciality: e.target.value })} />
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
-                {l === 'fr' ? '💡 Saisissez en français — la traduction anglaise est automatique' : '💡 Enter in French — English translation is automatic'}
-              </span>
+              <label className="form-label">{l === 'fr' ? 'Spécialité' : 'Speciality'} *</label>
+              <select className="form-select" value={ctrForm.specialityIdx} onChange={e => setCtrForm({ ...ctrForm, specialityIdx: parseInt(e.target.value) })}>
+                <option value={-1}>{l === 'fr' ? '-- Choisir une spécialité --' : '-- Choose a speciality --'}</option>
+                {specialities.map((s, i) => <option key={i} value={i}>{l === 'fr' ? s.fr : s.en}</option>)}
+              </select>
             </div>
             <div className="form-group">
               <label className="form-label">{l === 'fr' ? 'Contact (email/tél)' : 'Contact (email/phone)'}</label>
