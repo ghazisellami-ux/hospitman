@@ -3,14 +3,15 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
-import { scopeLots, scopeCRs, lotNames, type Language } from '@/lib/demoData';
+import { scopeLots, scopeCRs, type Language } from '@/lib/demoData';
 import { useProjectSettings } from '@/lib/useProjectSettings';
+import { autoTranslate } from '@/lib/autoTranslate';
 import { Target, FileEdit, X, Users, Plus, Building2 } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────
 interface Contractor { id: number; name: string; speciality_fr: string; speciality_en: string; contact: string; }
 interface LotItem { id: number; name_fr: string; name_en: string; desc_fr: string; desc_en: string; contractor: string; status: string; }
-interface CRItem { id: number; title: string; cost_impact: number; schedule_impact_days: number; status: string; }
+interface CRItem { id: number; title_fr: string; title_en: string; cost_impact: number; schedule_impact_days: number; status: string; }
 
 // ── Demo contractors ───────────────────────────────────────
 const demoContractors: Contractor[] = [
@@ -28,60 +29,74 @@ export default function ScopePage() {
   const l = lang as Language;
   const { currency } = useProjectSettings();
 
-  // ── Contractors state ──────────────────────────────────
+  // ── Contractors ────────────────────────────────────────
   const [contractors, setContractors] = useState<Contractor[]>(demoContractors);
   const [showContractorModal, setShowContractorModal] = useState(false);
-  const [contractorForm, setContractorForm] = useState({ name: '', speciality_fr: '', speciality_en: '', contact: '' });
+  const [ctrForm, setCtrForm] = useState({ name: '', speciality: '', contact: '' });
 
   const handleAddContractor = () => {
-    if (!contractorForm.name.trim()) return;
-    setContractors(prev => [...prev, { id: prev.length + 1, ...contractorForm }]);
+    if (!ctrForm.name.trim()) return;
+    setContractors(prev => [...prev, {
+      id: prev.length + 1,
+      name: ctrForm.name,
+      speciality_fr: ctrForm.speciality,
+      speciality_en: autoTranslate(ctrForm.speciality),
+      contact: ctrForm.contact,
+    }]);
     setShowContractorModal(false);
-    setContractorForm({ name: '', speciality_fr: '', speciality_en: '', contact: '' });
+    setCtrForm({ name: '', speciality: '', contact: '' });
   };
 
-  // ── Lots state ─────────────────────────────────────────
+  // ── Lots ───────────────────────────────────────────────
   const [userLots, setUserLots] = useState<LotItem[]>([]);
   const [showLotModal, setShowLotModal] = useState(false);
-  const [lotForm, setLotForm] = useState({ name_fr: '', name_en: '', desc_fr: '', desc_en: '', contractor: '', status: 'not_started' });
+  const [lotForm, setLotForm] = useState({ name: '', desc: '', contractor: '', status: 'not_started' });
 
   const displayLots: LotItem[] = [
-    ...scopeLots.map(lot => ({ ...lot, name_fr: lot.name_fr, name_en: lot.name_en, desc_fr: lot.desc_fr, desc_en: lot.desc_en })),
+    ...scopeLots.map(lot => ({ ...lot })),
     ...userLots,
   ];
 
   const handleAddLot = () => {
-    if (!lotForm.name_fr.trim() && !lotForm.name_en.trim()) return;
-    const newLot: LotItem = {
+    if (!lotForm.name.trim()) return;
+    setUserLots(prev => [...prev, {
       id: displayLots.length + 1,
-      name_fr: lotForm.name_fr || lotForm.name_en,
-      name_en: lotForm.name_en || lotForm.name_fr,
-      desc_fr: lotForm.desc_fr,
-      desc_en: lotForm.desc_en || lotForm.desc_fr,
+      name_fr: lotForm.name,
+      name_en: autoTranslate(lotForm.name),
+      desc_fr: lotForm.desc,
+      desc_en: autoTranslate(lotForm.desc),
       contractor: lotForm.contractor,
       status: lotForm.status,
-    };
-    setUserLots(prev => [...prev, newLot]);
+    }]);
     setShowLotModal(false);
-    setLotForm({ name_fr: '', name_en: '', desc_fr: '', desc_en: '', contractor: '', status: 'not_started' });
+    setLotForm({ name: '', desc: '', contractor: '', status: 'not_started' });
   };
 
-  // ── CRs state ──────────────────────────────────────────
-  const [crs, setCRs] = useState<CRItem[]>([]);
-  const [crsMounted, setCRsMounted] = useState(false);
+  // ── Change Requests ────────────────────────────────────
+  const [userCRs, setUserCRs] = useState<CRItem[]>([]);
   const [showCRModal, setShowCRModal] = useState(false);
-  const [crForm, setCRForm] = useState({ title: '', cost_impact: 0, schedule_impact_days: 0, lot: '' });
+  const [crForm, setCRForm] = useState({ title: '', cost_impact: 0, schedule_impact_days: 0 });
 
-  const displayCRs: CRItem[] = crsMounted ? crs : scopeCRs.map(cr => ({
-    id: cr.id, title: cr[`title_${l}`], cost_impact: cr.cost_impact, schedule_impact_days: cr.schedule_impact_days, status: cr.status,
-  }));
+  const displayCRs: CRItem[] = [
+    ...scopeCRs.map(cr => ({
+      id: cr.id, title_fr: cr.title_fr, title_en: cr.title_en,
+      cost_impact: cr.cost_impact, schedule_impact_days: cr.schedule_impact_days, status: cr.status,
+    })),
+    ...userCRs,
+  ];
 
   const handleAddCR = () => {
     if (!crForm.title.trim()) return;
-    const newCR: CRItem = { id: (crsMounted ? crs : displayCRs).length + 1, title: crForm.title, cost_impact: crForm.cost_impact, schedule_impact_days: crForm.schedule_impact_days, status: 'pending' };
-    if (!crsMounted) { setCRs([...displayCRs, newCR]); setCRsMounted(true); } else { setCRs([...crs, newCR]); }
+    setUserCRs(prev => [...prev, {
+      id: displayCRs.length + 1,
+      title_fr: crForm.title,
+      title_en: autoTranslate(crForm.title),
+      cost_impact: crForm.cost_impact,
+      schedule_impact_days: crForm.schedule_impact_days,
+      status: 'pending',
+    }]);
     setShowCRModal(false);
-    setCRForm({ title: '', cost_impact: 0, schedule_impact_days: 0, lot: '' });
+    setCRForm({ title: '', cost_impact: 0, schedule_impact_days: 0 });
   };
 
   // ── Helpers ────────────────────────────────────────────
@@ -103,7 +118,7 @@ export default function ScopePage() {
         <h1 className="page-title">{t('scope.title', lang)}</h1>
       </div>
 
-      {/* ═══ CONTRACTORS ═══ */}
+      {/* ═══ ENTREPRENEURS ═══ */}
       <div className="toolbar">
         <h2 style={{ fontSize: 18, fontWeight: 700 }}><Building2 size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{l === 'fr' ? 'Entrepreneurs' : 'Contractors'}</h2>
         <button className="btn btn-primary btn-sm" onClick={() => setShowContractorModal(true)}><Plus size={14} style={{ marginRight: 4 }} />{l === 'fr' ? 'Ajouter' : 'Add'}</button>
@@ -119,15 +134,15 @@ export default function ScopePage() {
           </tr></thead>
           <tbody>
             {contractors.map(c => {
-              const assignedLots = displayLots.filter(lot => lot.contractor === c.name).map(lot => lot[`name_${l}`]);
+              const assigned = displayLots.filter(lot => lot.contractor === c.name).map(lot => lot[`name_${l}`]);
               return (
                 <tr key={c.id}>
                   <td style={{ color: 'var(--text-muted)' }}>{c.id}</td>
                   <td style={{ fontWeight: 600 }}>{c.name}</td>
                   <td style={{ color: 'var(--text-secondary)' }}>{l === 'fr' ? c.speciality_fr : c.speciality_en}</td>
                   <td style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{c.contact}</td>
-                  <td>{assignedLots.length > 0
-                    ? assignedLots.map(name => <span key={name} className="badge badge-info" style={{ marginRight: 4, marginBottom: 2 }}>{name}</span>)
+                  <td>{assigned.length > 0
+                    ? assigned.map(n => <span key={n} className="badge badge-info" style={{ marginRight: 4, marginBottom: 2 }}>{n}</span>)
                     : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: 13 }}>{l === 'fr' ? 'Aucun lot' : 'No lots'}</span>}
                   </td>
                 </tr>
@@ -175,7 +190,7 @@ export default function ScopePage() {
             {displayCRs.map(cr => (
               <tr key={cr.id}>
                 <td style={{ color: 'var(--text-muted)' }}>CR-{cr.id}</td>
-                <td style={{ fontWeight: 600 }}>{cr.title}</td>
+                <td style={{ fontWeight: 600 }}>{l === 'fr' ? cr.title_fr : cr.title_en}</td>
                 <td style={{ color: '#f59e0b' }}>+{cr.cost_impact.toLocaleString()} {currency}</td>
                 <td style={{ color: '#ef4444' }}>+{cr.schedule_impact_days}{l === 'fr' ? 'j' : 'd'}</td>
                 <td><span className={`badge ${badge(cr.status)}`}>{t(`status.${cr.status}`, lang)}</span></td>
@@ -185,7 +200,7 @@ export default function ScopePage() {
         </table>
       </div>
 
-      {/* ═══ ADD CONTRACTOR MODAL ═══ */}
+      {/* ═══ MODAL: Ajouter Entrepreneur ═══ */}
       {showContractorModal && (
         <div className="modal-overlay" onClick={() => setShowContractorModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -194,22 +209,19 @@ export default function ScopePage() {
               <button className="modal-close" onClick={() => setShowContractorModal(false)}><X size={20} /></button>
             </div>
             <div className="form-group">
-              <label className="form-label">{l === 'fr' ? 'Nom de l\'entreprise' : 'Company Name'} *</label>
-              <input className="form-input" placeholder="Ex: SociétéBTP" value={contractorForm.name} onChange={e => setContractorForm({ ...contractorForm, name: e.target.value })} />
+              <label className="form-label">{l === 'fr' ? "Nom de l'entreprise" : 'Company Name'} *</label>
+              <input className="form-input" placeholder="Ex: SociétéBTP" value={ctrForm.name} onChange={e => setCtrForm({ ...ctrForm, name: e.target.value })} />
             </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">{l === 'fr' ? 'Spécialité (FR)' : 'Speciality (FR)'}</label>
-                <input className="form-input" placeholder="Ex: Peinture" value={contractorForm.speciality_fr} onChange={e => setContractorForm({ ...contractorForm, speciality_fr: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">{l === 'fr' ? 'Spécialité (EN)' : 'Speciality (EN)'}</label>
-                <input className="form-input" placeholder="Ex: Painting" value={contractorForm.speciality_en} onChange={e => setContractorForm({ ...contractorForm, speciality_en: e.target.value })} />
-              </div>
+            <div className="form-group">
+              <label className="form-label">{l === 'fr' ? 'Spécialité' : 'Speciality'}</label>
+              <input className="form-input" placeholder={l === 'fr' ? 'Ex: Plomberie Sanitaire' : 'Ex: Plumbing'} value={ctrForm.speciality} onChange={e => setCtrForm({ ...ctrForm, speciality: e.target.value })} />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
+                {l === 'fr' ? '💡 Saisissez en français — la traduction anglaise est automatique' : '💡 Enter in French — English translation is automatic'}
+              </span>
             </div>
             <div className="form-group">
               <label className="form-label">{l === 'fr' ? 'Contact (email/tél)' : 'Contact (email/phone)'}</label>
-              <input className="form-input" placeholder="contact@company.tn" value={contractorForm.contact} onChange={e => setContractorForm({ ...contractorForm, contact: e.target.value })} />
+              <input className="form-input" placeholder="contact@company.tn" value={ctrForm.contact} onChange={e => setCtrForm({ ...ctrForm, contact: e.target.value })} />
             </div>
             <div className="modal-actions">
               <button className="btn btn-secondary" onClick={() => setShowContractorModal(false)}>{t('common.cancel', lang)}</button>
@@ -219,7 +231,7 @@ export default function ScopePage() {
         </div>
       )}
 
-      {/* ═══ ADD LOT MODAL ═══ */}
+      {/* ═══ MODAL: Ajouter Lot ═══ */}
       {showLotModal && (
         <div className="modal-overlay" onClick={() => setShowLotModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -227,25 +239,16 @@ export default function ScopePage() {
               <h3 className="modal-title">{t('scope.addLot', lang)}</h3>
               <button className="modal-close" onClick={() => setShowLotModal(false)}><X size={20} /></button>
             </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">{l === 'fr' ? 'Nom (FR)' : 'Name (FR)'} *</label>
-                <input className="form-input" placeholder="Ex: Peinture" value={lotForm.name_fr} onChange={e => setLotForm({ ...lotForm, name_fr: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">{l === 'fr' ? 'Nom (EN)' : 'Name (EN)'}</label>
-                <input className="form-input" placeholder="Ex: Painting" value={lotForm.name_en} onChange={e => setLotForm({ ...lotForm, name_en: e.target.value })} />
-              </div>
+            <div className="form-group">
+              <label className="form-label">{l === 'fr' ? 'Nom du lot' : 'Lot Name'} *</label>
+              <input className="form-input" placeholder={l === 'fr' ? 'Ex: Peinture' : 'Ex: Painting'} value={lotForm.name} onChange={e => setLotForm({ ...lotForm, name: e.target.value })} />
             </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">{l === 'fr' ? 'Description (FR)' : 'Description (FR)'}</label>
-                <input className="form-input" value={lotForm.desc_fr} onChange={e => setLotForm({ ...lotForm, desc_fr: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">{l === 'fr' ? 'Description (EN)' : 'Description (EN)'}</label>
-                <input className="form-input" value={lotForm.desc_en} onChange={e => setLotForm({ ...lotForm, desc_en: e.target.value })} />
-              </div>
+            <div className="form-group">
+              <label className="form-label">{t('common.description', lang)}</label>
+              <textarea className="form-textarea" placeholder={l === 'fr' ? 'Ex: Peinture intérieure et extérieure des bâtiments' : 'Ex: Interior and exterior building painting'} value={lotForm.desc} onChange={e => setLotForm({ ...lotForm, desc: e.target.value })} />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
+                {l === 'fr' ? '💡 Saisissez en français — la traduction anglaise est automatique' : '💡 Enter in French — English translation is automatic'}
+              </span>
             </div>
             <div className="form-row">
               <div className="form-group">
@@ -270,7 +273,7 @@ export default function ScopePage() {
         </div>
       )}
 
-      {/* ═══ ADD CR MODAL ═══ */}
+      {/* ═══ MODAL: Nouvelle Demande CR ═══ */}
       {showCRModal && (
         <div className="modal-overlay" onClick={() => setShowCRModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -281,6 +284,9 @@ export default function ScopePage() {
             <div className="form-group">
               <label className="form-label">{l === 'fr' ? 'Titre' : 'Title'} *</label>
               <input className="form-input" placeholder={l === 'fr' ? 'Ex: Modification emplacement bloc opératoire' : 'Ex: Operating theater location change'} value={crForm.title} onChange={e => setCRForm({ ...crForm, title: e.target.value })} />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
+                {l === 'fr' ? '💡 Saisissez en français — la traduction anglaise est automatique' : '💡 Enter in French — English translation is automatic'}
+              </span>
             </div>
             <div className="form-row">
               <div className="form-group">
@@ -294,13 +300,9 @@ export default function ScopePage() {
             </div>
             <div className="form-group">
               <label className="form-label">Lot</label>
-              <select className="form-select" value={crForm.lot} onChange={e => setCRForm({ ...crForm, lot: e.target.value })}>
+              <select className="form-select">
                 {displayLots.map(lot => <option key={lot.id} value={lot[`name_${l}`]}>{lot[`name_${l}`]}</option>)}
               </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">{l === 'fr' ? 'Justification' : 'Justification'}</label>
-              <textarea className="form-textarea" placeholder={l === 'fr' ? 'Expliquez la raison de cette demande...' : 'Explain the reason for this request...'} />
             </div>
             <div className="modal-actions">
               <button className="btn btn-secondary" onClick={() => setShowCRModal(false)}>{t('common.cancel', lang)}</button>
