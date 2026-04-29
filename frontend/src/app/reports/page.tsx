@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { useLanguage } from '../layout';
 import { t } from '@/lib/i18n';
 import { kpiData, budgetData, activityData, riskData, ncrData, personnelSummary, fmt } from '@/lib/reportData';
-import { FileText, FileSpreadsheet, Calendar, BarChart3, Settings, Download, CheckCircle, Clock } from 'lucide-react';
+import { FileText, FileSpreadsheet, Calendar, BarChart3, Settings, Download, CheckCircle, Clock, PieChart, TrendingUp, Activity } from 'lucide-react';
 import type { Language } from '@/lib/i18n';
 
 type ReportType = 'weekly' | 'monthly' | 'custom';
 
-function buildPdfHtml(lang: Language, type: ReportType, weekStart: string, weekEnd: string, selectedMonth: string, modules: Record<string, boolean>) {
+function buildPdfHtml(lang: Language, type: ReportType, weekStart: string, weekEnd: string, selectedMonth: string, modules: Record<string, boolean>, charts: Record<string, boolean> = {}) {
   const l = (fr: string, en: string) => lang === 'fr' ? fr : en;
   const statusLabel = (s: string) => t(`status.${s}`, lang);
 
@@ -39,6 +39,8 @@ tr:nth-child(even){background:#f8fafc}
 .footer{text-align:center;font-size:9px;color:#94a3b8;margin-top:24px;padding-top:8px;border-top:1px solid #e2e8f0}
 .warn{color:#dc2626;font-weight:600}
 .ok{color:#16a34a;font-weight:600}
+.chart-container{margin:12px 0 18px;text-align:center}
+.chart-container svg{max-width:100%}
 @media print{body{padding:0}.header{-webkit-print-color-adjust:exact;print-color-adjust:exact}th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style></head><body>
 <div class="header">
@@ -59,6 +61,30 @@ tr:nth-child(even){background:#f8fafc}
   <div class="kpi-box"><div class="val ${kpiData.active_critical_risks > 0 ? 'warn' : 'ok'}">${kpiData.active_critical_risks}</div><div class="lbl">${l('Risques Critiques', 'Critical Risks')}</div></div>
 </div>`;
 
+  // S-Curve Chart
+  if (charts.scurve) {
+    const scurveData = [
+      { w: 'S1', p: 2, a: 1.5 }, { w: 'S4', p: 8, a: 7 }, { w: 'S8', p: 16, a: 14 },
+      { w: 'S12', p: 24, a: 21 }, { w: 'S16', p: 32, a: 27 }, { w: 'S20', p: 40, a: 34 }, { w: 'S24', p: 45, a: 38.5 },
+    ];
+    const svgW = 500, svgH = 200, pad = 40;
+    const xStep = (svgW - pad * 2) / (scurveData.length - 1);
+    const yScale = (v: number) => svgH - pad - (v / 50) * (svgH - pad * 2);
+    const plannedPts = scurveData.map((d, i) => `${pad + i * xStep},${yScale(d.p)}`).join(' ');
+    const actualPts = scurveData.map((d, i) => `${pad + i * xStep},${yScale(d.a)}`).join(' ');
+    const xLabels = scurveData.map((d, i) => `<text x="${pad + i * xStep}" y="${svgH - 10}" text-anchor="middle" font-size="9" fill="#64748b">${d.w}</text>`).join('');
+    html += `<h2>${l('Courbe en S — Avancement', 'S-Curve — Progress')}</h2>
+<div class="chart-container"><svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">
+<rect width="${svgW}" height="${svgH}" fill="#f8fafc" rx="6"/>
+${[0, 10, 20, 30, 40, 50].map(v => `<line x1="${pad}" y1="${yScale(v)}" x2="${svgW - pad}" y2="${yScale(v)}" stroke="#e2e8f0" stroke-dasharray="3"/><text x="${pad - 6}" y="${yScale(v) + 3}" text-anchor="end" font-size="8" fill="#94a3b8">${v}%</text>`).join('')}
+<polyline points="${plannedPts}" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+<polyline points="${actualPts}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-dasharray="6,3"/>
+${xLabels}
+<circle cx="${svgW - 120}" cy="15" r="4" fill="#3b82f6"/><text x="${svgW - 112}" y="19" font-size="9" fill="#334155">${l('Planifié', 'Planned')}</text>
+<circle cx="${svgW - 60}" cy="15" r="4" fill="#10b981"/><text x="${svgW - 52}" y="19" font-size="9" fill="#334155">${l('Réel', 'Actual')}</text>
+</svg></div>`;
+  }
+
   // Schedule
   if (type !== 'custom' || modules.schedule) {
     html += `<h2>2. ${l('Planning — Avancement', 'Schedule — Progress')}</h2><table>
@@ -68,6 +94,27 @@ tr:nth-child(even){background:#f8fafc}
       html += `<tr><td>${lang === 'en' ? a.name_en : a.name_fr}</td><td>${a.lot}</td><td>${a.planned_progress}%</td><td>${a.actual_progress}%</td><td class="${v < 0 ? 'warn' : ''}">${v}%</td><td>${statusLabel(a.status)}</td></tr>`;
     });
     html += `</table>`;
+  }
+
+  // Progress Gantt Chart
+  if (charts.gantt) {
+    const svgW = 500, svgH = 180, pad = 120, barH = 18, gap = 6;
+    const bars = activityData.slice(0, 6);
+    const rowH = barH + gap;
+    const actualH = pad > 0 ? bars.length * rowH + 30 : svgH;
+    html += `<h2>${l('Gantt — Avancement', 'Gantt — Progress')}</h2>
+<div class="chart-container"><svg viewBox="0 0 ${svgW} ${actualH}" xmlns="http://www.w3.org/2000/svg">
+<rect width="${svgW}" height="${actualH}" fill="#f8fafc" rx="6"/>`;
+    bars.forEach((a, i) => {
+      const y = 12 + i * rowH;
+      const name = lang === 'en' ? a.name_en : a.name_fr;
+      const maxW = svgW - pad - 20;
+      html += `<text x="${pad - 6}" y="${y + barH / 2 + 3}" text-anchor="end" font-size="8" fill="#334155">${name.length > 18 ? name.slice(0, 18) + '…' : name}</text>`;
+      html += `<rect x="${pad}" y="${y}" width="${(a.planned_progress / 100) * maxW}" height="${barH / 2}" rx="3" fill="#3b82f6" opacity="0.4"/>`;
+      html += `<rect x="${pad}" y="${y + barH / 2}" width="${(a.actual_progress / 100) * maxW}" height="${barH / 2}" rx="3" fill="#10b981"/>`;
+      html += `<text x="${pad + Math.max((a.actual_progress / 100) * maxW, (a.planned_progress / 100) * maxW) + 4}" y="${y + barH / 2 + 3}" font-size="8" fill="#64748b">${a.actual_progress}%</text>`;
+    });
+    html += `</svg></div>`;
   }
 
   // Cost
@@ -81,6 +128,30 @@ tr:nth-child(even){background:#f8fafc}
     html += `</table>`;
   }
 
+  // Budget Breakdown Bar Chart
+  if (charts.budget_chart) {
+    const svgW = 500, svgH = 200, pad = 80, barW = 28;
+    const maxVal = Math.max(...budgetData.map(b => b.initial));
+    const yScale = (v: number) => svgH - 30 - (v / maxVal) * (svgH - 60);
+    const groupW = svgW - pad - 20;
+    const step = groupW / budgetData.length;
+    html += `<h2>${l('Graphique Budget par Lot', 'Budget Breakdown Chart')}</h2>
+<div class="chart-container"><svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">
+<rect width="${svgW}" height="${svgH}" fill="#f8fafc" rx="6"/>`;
+    budgetData.forEach((b, i) => {
+      const x = pad + i * step;
+      const lotName = lang === 'en' ? b.lot_en : b.lot_fr;
+      html += `<rect x="${x}" y="${yScale(b.initial)}" width="${barW / 3}" height="${svgH - 30 - yScale(b.initial)}" fill="#3b82f6" rx="2"/>`;
+      html += `<rect x="${x + barW / 3}" y="${yScale(b.committed)}" width="${barW / 3}" height="${svgH - 30 - yScale(b.committed)}" fill="#8b5cf6" rx="2"/>`;
+      html += `<rect x="${x + 2 * barW / 3}" y="${yScale(b.actual)}" width="${barW / 3}" height="${svgH - 30 - yScale(b.actual)}" fill="#10b981" rx="2"/>`;
+      html += `<text x="${x + barW / 2}" y="${svgH - 14}" text-anchor="middle" font-size="7" fill="#64748b">${lotName.length > 10 ? lotName.slice(0, 10) : lotName}</text>`;
+    });
+    html += `<circle cx="${svgW - 180}" cy="12" r="4" fill="#3b82f6"/><text x="${svgW - 172}" y="16" font-size="8" fill="#334155">Budget</text>`;
+    html += `<circle cx="${svgW - 120}" cy="12" r="4" fill="#8b5cf6"/><text x="${svgW - 112}" y="16" font-size="8" fill="#334155">${l('Engagé', 'Committed')}</text>`;
+    html += `<circle cx="${svgW - 55}" cy="12" r="4" fill="#10b981"/><text x="${svgW - 47}" y="16" font-size="8" fill="#334155">${l('Réel', 'Actual')}</text>`;
+    html += `</svg></div>`;
+  }
+
   // Quality / NCR
   if (type !== 'custom' || modules.quality) {
     html += `<h2>4. ${l('Qualité — NCR', 'Quality — NCR')}</h2>
@@ -92,6 +163,40 @@ tr:nth-child(even){background:#f8fafc}
     html += `</table>`;
   }
 
+  // Quality Pie Chart
+  if (charts.quality_pie) {
+    const data = [
+      { label: l('Conforme', 'Conforming'), value: 42, color: '#16a34a' },
+      { label: l('Non-conforme', 'Non-conforming'), value: 7, color: '#dc2626' },
+      { label: l('En attente', 'Pending'), value: 5, color: '#f59e0b' },
+    ];
+    const total = data.reduce((s, d) => s + d.value, 0);
+    const cx = 120, cy = 100, r = 70;
+    let startAngle = -Math.PI / 2;
+    let arcs = '';
+    data.forEach(d => {
+      const angle = (d.value / total) * 2 * Math.PI;
+      const endAngle = startAngle + angle;
+      const x1 = cx + r * Math.cos(startAngle), y1 = cy + r * Math.sin(startAngle);
+      const x2 = cx + r * Math.cos(endAngle), y2 = cy + r * Math.sin(endAngle);
+      const largeArc = angle > Math.PI ? 1 : 0;
+      arcs += `<path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z" fill="${d.color}"/>`;
+      startAngle = endAngle;
+    });
+    const legend = data.map((d, i) =>
+      `<circle cx="260" cy="${50 + i * 22}" r="5" fill="${d.color}"/><text x="272" y="${54 + i * 22}" font-size="10" fill="#334155">${d.label}: ${d.value} (${Math.round(d.value / total * 100)}%)</text>`
+    ).join('');
+    html += `<h2>${l('Camembert Qualité', 'Quality Pie Chart')}</h2>
+<div class="chart-container"><svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
+<rect width="420" height="200" fill="#f8fafc" rx="6"/>
+${arcs}
+<circle cx="${cx}" cy="${cy}" r="35" fill="#f8fafc"/>
+<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">${total}</text>
+<text x="${cx}" y="${cy + 16}" text-anchor="middle" font-size="8" fill="#64748b">Total</text>
+${legend}
+</svg></div>`;
+  }
+
   // Risks
   if (type !== 'custom' || modules.risk) {
     html += `<h2>5. ${l('Risques', 'Risks')}</h2><table>
@@ -100,6 +205,46 @@ tr:nth-child(even){background:#f8fafc}
       html += `<tr><td>${lang === 'en' ? r.desc_en : r.desc_fr}</td><td>${lang === 'en' ? r.category_en : r.category_fr}</td><td>${r.probability}</td><td>${r.impact}</td><td class="${r.score >= 12 ? 'warn' : ''}">${r.score}</td><td>${statusLabel(r.status)}</td></tr>`;
     });
     html += `</table>`;
+  }
+
+  // Risk Matrix Heatmap
+  if (charts.risk_matrix) {
+    const cellSize = 44, pad2 = 60, gap2 = 2;
+    const probLabels = ['T.H', l('Élevé', 'High'), l('Moyen', 'Med'), l('Faible', 'Low'), 'T.B'];
+    const impLabels = [l('Mineur', 'Minor'), l('Modéré', 'Mod'), l('Majeur', 'Major'), l('Critique', 'Crit')];
+    const probs = [5, 4, 3, 2, 1];
+    const imps = [1, 2, 3, 4];
+    const riskCounts: Record<string, number> = {};
+    riskData.forEach(r => {
+      const pMap: Record<string, number> = { very_high: 5, high: 4, medium: 3, low: 2, very_low: 1 };
+      const iMap: Record<string, number> = { negligible: 1, moderate: 2, major: 3, critical: 4 };
+      const key = `${pMap[r.probability] || 3}-${iMap[r.impact] || 2}`;
+      riskCounts[key] = (riskCounts[key] || 0) + 1;
+    });
+    const w = pad2 + impLabels.length * (cellSize + gap2) + 10;
+    const h = 30 + probLabels.length * (cellSize + gap2) + 10;
+    let cells = '';
+    probs.forEach((p, pi) => {
+      cells += `<text x="${pad2 - 6}" y="${30 + pi * (cellSize + gap2) + cellSize / 2 + 3}" text-anchor="end" font-size="8" fill="#64748b">${probLabels[pi]}</text>`;
+      imps.forEach((im, ii) => {
+        const score = p * im;
+        const color = score >= 15 ? '#dc2626' : score >= 10 ? '#f59e0b' : score >= 5 ? '#3b82f6' : '#10b981';
+        const opacity = score >= 15 ? '0.25' : score >= 10 ? '0.2' : score >= 5 ? '0.15' : '0.1';
+        const count = riskCounts[`${p}-${im}`] || 0;
+        cells += `<rect x="${pad2 + ii * (cellSize + gap2)}" y="${30 + pi * (cellSize + gap2)}" width="${cellSize}" height="${cellSize}" rx="4" fill="${color}" opacity="${opacity}" stroke="${color}" stroke-width="1"/>`;
+        if (count > 0) cells += `<text x="${pad2 + ii * (cellSize + gap2) + cellSize / 2}" y="${30 + pi * (cellSize + gap2) + cellSize / 2 + 5}" text-anchor="middle" font-size="14" font-weight="bold" fill="${color}">${count}</text>`;
+      });
+    });
+    const colHeaders = impLabels.map((lb, i) =>
+      `<text x="${pad2 + i * (cellSize + gap2) + cellSize / 2}" y="22" text-anchor="middle" font-size="8" fill="#64748b">${lb}</text>`
+    ).join('');
+    html += `<h2>${l('Matrice des Risques', 'Risk Matrix')}</h2>
+<div class="chart-container"><svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+<rect width="${w}" height="${h}" fill="#f8fafc" rx="6"/>
+<text x="${pad2 / 2}" y="12" text-anchor="middle" font-size="8" fill="#94a3b8">${l('Prob.', 'Prob.')}</text>
+${colHeaders}
+${cells}
+</svg></div>`;
   }
 
   // HR
@@ -176,13 +321,17 @@ export default function ReportsPage() {
   const [modules, setModules] = useState({
     schedule: true, cost: true, quality: true, risk: true, communication: true, hr: true,
   });
+  const [charts, setCharts] = useState({
+    scurve: true, gantt: true, budget_chart: true, quality_pie: true, risk_matrix: true,
+  });
   const [generated, setGenerated] = useState<{ type: string; format: string; date: string }[]>([]);
 
   const toggleModule = (key: string) => setModules((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
+  const toggleChart = (key: string) => setCharts((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
 
   function downloadPDF(type: ReportType) {
     try {
-      const html = buildPdfHtml(lang, type, weekStart, weekEnd, selectedMonth, modules);
+      const html = buildPdfHtml(lang, type, weekStart, weekEnd, selectedMonth, modules, type === 'custom' ? charts : { scurve: true, gantt: true, budget_chart: true, quality_pie: true, risk_matrix: true });
       // Use a hidden iframe to bypass popup blockers
       const iframe = document.createElement('iframe');
       iframe.style.position = 'fixed';
@@ -298,18 +447,44 @@ export default function ReportsPage() {
         </div>
 
         {/* Custom */}
-        <div className="chart-card">
+        <div className="chart-card" style={{ gridColumn: '1 / -1' }}>
           <div className="chart-title"><Settings size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{lang === 'fr' ? 'Export Personnalisé' : 'Custom Export'}</div>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16, lineHeight: 1.6 }}>
-            {lang === 'fr' ? 'Sélectionnez les modules à inclure.' : 'Select modules to include.'}
+            {lang === 'fr' ? 'Sélectionnez les modules et graphiques à inclure dans votre rapport.' : 'Select modules and charts to include in your report.'}
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-            {Object.entries(modules).map(([key, checked]) => (
-              <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--text-primary)', cursor: 'pointer' }}>
-                <input type="checkbox" checked={checked} onChange={() => toggleModule(key)} style={{ width: 16, height: 16 }} />
-                {moduleLabels[key][lang]}
-              </label>
-            ))}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+            {/* Data Modules */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <FileText size={15} />{lang === 'fr' ? 'Modules de données' : 'Data Modules'}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {Object.entries(modules).map(([key, checked]) => (
+                  <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--text-primary)', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={checked} onChange={() => toggleModule(key)} style={{ width: 16, height: 16 }} />
+                    {moduleLabels[key][lang]}
+                  </label>
+                ))}
+              </div>
+            </div>
+            {/* Charts */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <BarChart3 size={15} />{lang === 'fr' ? 'Graphiques & Diagrammes' : 'Charts & Diagrams'}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {Object.entries(charts).map(([key, checked]) => (
+                  <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--text-primary)', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={checked} onChange={() => toggleChart(key)} style={{ width: 16, height: 16 }} />
+                    {key === 'scurve' && <><TrendingUp size={14} style={{ color: '#3b82f6' }} />{lang === 'fr' ? 'Courbe en S (Avancement)' : 'S-Curve (Progress)'}</>}
+                    {key === 'gantt' && <><Activity size={14} style={{ color: '#10b981' }} />{lang === 'fr' ? 'Gantt — Avancement' : 'Gantt — Progress'}</>}
+                    {key === 'budget_chart' && <><BarChart3 size={14} style={{ color: '#8b5cf6' }} />{lang === 'fr' ? 'Histogramme Budget par Lot' : 'Budget Breakdown Bar Chart'}</>}
+                    {key === 'quality_pie' && <><PieChart size={14} style={{ color: '#f59e0b' }} />{lang === 'fr' ? 'Camembert Qualité' : 'Quality Pie Chart'}</>}
+                    {key === 'risk_matrix' && <><BarChart3 size={14} style={{ color: '#ef4444' }} />{lang === 'fr' ? 'Matrice des Risques' : 'Risk Matrix Heatmap'}</>}
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-primary" onClick={() => downloadPDF('custom')}><Download size={14} style={{ marginRight: 4 }} />PDF</button>
