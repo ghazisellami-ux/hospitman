@@ -67,6 +67,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'status.mitigating': 'En traitement',
     'status.resolved': 'Résolu',
     'status.accepted': 'Accepté',
+    'status.on_track': 'Dans les temps',
 
     // Scope
     'scope.title': 'Gestion du Périmètre',
@@ -192,6 +193,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'status.mitigating': 'Mitigating',
     'status.resolved': 'Resolved',
     'status.accepted': 'Accepted',
+    'status.on_track': 'On Track',
 
     // Scope
     'scope.title': 'Scope Management',
